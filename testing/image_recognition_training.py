@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow import keras
-import matplotlib.pyplot as plt
 
 mnist = keras.datasets.mnist
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
