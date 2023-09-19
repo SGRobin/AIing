@@ -110,7 +110,7 @@ while True:
 
     p.setJointMotorControl2(robot_id, 0, p.POSITION_CONTROL, targetPosition=user_angle_base_joint)
     p.setJointMotorControl2(robot_id, 1, p.POSITION_CONTROL, targetPosition=user_angle_leg_center_joint_r1)
-    p.setJointMotorControl2(robot_id, 2, p.POSITION_CONTROL, targetPosition=user_angle_coxa_joint_r1)
+    # p.setJointMotorControl2(robot_id, 2, p.POSITION_CONTROL, targetPosition=user_angle_coxa_joint_r1)
     p.setJointMotorControl2(robot_id, 3, p.POSITION_CONTROL, targetPosition=user_angle_femur_joint_r1)
     p.setJointMotorControl2(robot_id, 4, p.POSITION_CONTROL, targetPosition=user_angle_tibia_joint_r1)
     p.setJointMotorControl2(robot_id, 5, p.POSITION_CONTROL, targetPosition=user_angle_tibia_foot_joint_r1)
@@ -140,11 +140,11 @@ while True:
     p.setJointMotorControl2(robot_id, 29, p.POSITION_CONTROL, targetPosition=user_angle_tibia_joint_l3)
     p.setJointMotorControl2(robot_id, 30, p.POSITION_CONTROL, targetPosition=user_angle_tibia_foot_joint_l3)
 
-    # check+= 1
-    # if check % 500 == 0:
-    #     p.setJointMotorControl2(robot_id, 2, p.POSITION_CONTROL, targetPosition=np.pi / 2)
-    # if check % 1000 == 0:
-    #     p.setJointMotorControl2(robot_id, 2, p.POSITION_CONTROL, targetPosition=-np.pi / 2)
+    check+= 1
+    if check % 500 == 0:
+        p.setJointMotorControl2(robot_id, 2, p.POSITION_CONTROL, targetPosition=1.5)
+    if check % 1000 == 0:
+        p.setJointMotorControl2(robot_id, 2, p.POSITION_CONTROL, targetPosition=-1.5)
 
     p.stepSimulation()
     time.sleep(1. / 240.)
