@@ -11,33 +11,32 @@ p.setGravity(0, 0, 0)
 planeId = p.loadURDF("plane.urdf")
 
 # Replace 'robot_id.urdf' with your own URDF file path or name
-urdf_file_path = "models/crab_model.urdf"
-robot_id = p.loadURDF(urdf_file_path)
-num_joints = p.getNumJoints(robot_id)
+urdf_file_path = "../Simulation/models/crab_model.urdf"
+
+
 startPos = [0, 0, 1]
 startOrientation = p.getQuaternionFromEuler([0, 0, 0])
+robot_id = p.loadURDF(urdf_file_path, startPos, startOrientation)
 
-
+num_joints = p.getNumJoints(robot_id)
 print(num_joints)
 
+name_list = []
 for joint_index in range(num_joints):
     joint_info = p.getJointInfo(robot_id, joint_index)
-    # joint_info contains information about the joint
-    print(joint_info)
+    name_list.append(joint_info[1])
 
+for name in name_list:
+    print(f"{name.decode('utf-8')} = p.addUserDebugParameter('{name.decode('utf-8')}', -np.pi / 2, np.pi / 2, 0)")
+    print(f"user_angle_{name.decode('utf-8')} = p.readUserDebugParameter({name.decode('utf-8')})")
 
-# link_states = p.getLinkStates(robot_id, range(num_joints))
-# for link_state in link_states:
-#     link_position, link_orientation, _, _ = link_state
-#     # Use link_position and link_orientation
-
+id = 0
+for name in name_list:
+    print(f"p.setJointMotorControl2(robot_id, {id}, p.POSITION_CONTROL, targetPosition=user_angle_{name.decode('utf-8')})")
+    id += 1
 
 # set the center of mass frame (loadURDF sets base link frame)
 # startPos/Ornp.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
-
-for i in range(10000):
-    p.stepSimulation()
-    time.sleep(1. / 240.)
 
 cubePos, cubeOrn = p.getBasePositionAndOrientation(robot_id)
 print(cubePos, cubeOrn)
