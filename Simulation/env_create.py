@@ -5,7 +5,7 @@ import pybullet_data
 
 physicsClient = p.connect(p.GUI)  # or p.DIRECT for non-graphical version
 p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
-p.setGravity(0, 0, 0)
+p.setGravity(0, 0, -9.81)
 planeId = p.loadURDF("plane.urdf")
 
 # Replace 'robot_id.urdf' with your own URDF file path or name
