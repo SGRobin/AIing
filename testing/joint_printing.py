@@ -11,7 +11,7 @@ p.setGravity(0, 0, 0)
 planeId = p.loadURDF("plane.urdf")
 
 # Replace 'robot_id.urdf' with your own URDF file path or name
-urdf_file_path = "../Simulation/models/crab_model.urdf"
+urdf_file_path = "../Simulation/models/crab_model.urdf.xml"
 
 
 startPos = [0, 0, 1]
