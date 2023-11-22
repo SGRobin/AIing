@@ -1,5 +1,3 @@
-import random
-
 import numpy as np
 
 from neural_network import NeuralNetwork
@@ -10,15 +8,16 @@ test_outputs = np.array([0, 1, 1, 0])
 
 # Genetic Algorithm parameters
 population_size = 100
-generations = 1000
+generations = 200
 mutation_rate = 0.1
+network_size = [2, 10, 10, 1]
 
 
 # Function to initialize a population of neural networks
 def initialize_population():
     population = []
     for _ in range(population_size):
-        model = NeuralNetwork([2, 10, 10, 1])
+        model = NeuralNetwork(network_size)
         population.append(model)
     return population
 
@@ -34,45 +33,15 @@ def evaluate_fitness(network, test_inputs, test_outputs):
     return 1 / (1 + error)
 
 
-# Function for genetic mutation
-def mutate(network, mutation_rate):
-    mutated_network = NeuralNetwork([2, 10, 10, 1])
-    for layer in range(network.get_num_layers()):
-        current_biases = network.get_layer_biases(layer)
-        mutated_biases = []
-        for i in range(len(current_biases)):
-            if random.random() < mutation_rate:
-                current_biases[i] += random.uniform(-1, 1) * 0.5
-            mutated_biases.append(current_biases[i])
-
-        current_weights = network.get_layer_weights(layer)
-        # print(current_weights)
-        mutated_weights = []
-        for weights in current_weights:
-            temp_mutated_weights = []
-            for i in range(len(weights)):
-                if random.random() < mutation_rate:
-                    weights[i] += random.uniform(-1, 1)
-                temp_mutated_weights.append(weights[i])
-            mutated_weights.append(temp_mutated_weights)
-        mutated_network.set_layer(layer, weights=np.array(mutated_weights), biases=np.array(mutated_biases))
-    return mutated_network
-
-
-def get_top_50_percent_indexes(arr):
+def get_top_percent_indexes(arr, percent):
     if not arr:
         return "Array is empty"
 
-    # Calculate the number of elements in the top 50%
-    top_50_percent_count = int(len(arr) * 0.5)
-
-    # Use sorted to get the indices of the sorted array
+    top_percent_count = int(len(arr) * percent / 100)
     sorted_indexes = sorted(range(len(arr)), key=lambda i: arr[i])
+    top_percent_indexes = sorted_indexes[-top_percent_count:]
 
-    # Get the indexes of the top 50% largest numbers
-    top_50_percent_indexes = sorted_indexes[-top_50_percent_count:]
-
-    return top_50_percent_indexes
+    return top_percent_indexes
 
 
 # Genetic Algorithm
@@ -83,17 +52,22 @@ for generation in range(generations):
     # Evaluate fitness
     fitness_scores = [evaluate_fitness(network, test_inputs, test_outputs) for network in population]
 
-    top_fitness = get_top_50_percent_indexes(fitness_scores)
+    top_40_fitness = get_top_percent_indexes(fitness_scores, 40)
 
     # Create next generation through crossover and mutation
     next_generation = []
-    for i in range(population_size // 2):
-        mutation_1 = mutate(population[top_fitness[i]], mutation_rate)
-        mutation_2 = mutate(population[top_fitness[i]], mutation_rate)
-        next_generation.append(mutation_1)
-        next_generation.append(mutation_2)
+    for i in range(len(top_40_fitness)):
+        clone = population[top_40_fitness[i]].clone()
+        population[top_40_fitness[i]].mutate(mutation_rate)
+        clone.mutate(mutation_rate)
+        next_generation.append(population[top_40_fitness[i]])
+        next_generation.append(clone)
 
+    top_20_fitness = get_top_percent_indexes(fitness_scores, 20)
+    for i in range(len(top_20_fitness)):
+        next_generation.append(population[top_20_fitness[i]])
 
+    print(generation)
     population = next_generation
 
 # Get the best-performing network

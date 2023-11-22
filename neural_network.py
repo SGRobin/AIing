@@ -1,5 +1,4 @@
-import math
-from random import random
+import random
 
 import numpy as np
 
@@ -16,8 +15,8 @@ class Neuron:
     """
 
     def __init__(self, num_of_weights):
-        self.weights = np.array([random() for _ in range(num_of_weights)])
-        self.bias = random()
+        self.weights = np.array([random.random() for _ in range(num_of_weights)])
+        self.bias = random.random()
 
     def fire(self, inputs):
         """
@@ -26,10 +25,30 @@ class Neuron:
         :param inputs: the input values *numpy array (outputs from last layer)
         :return: outputs
         """
-        # ToDo - check why its a numpy.float64 and fix it
-        # if len(inputs) != len(self.weights):
-        #     raise ValueError("input and weights sizes don't match")
+        if len(inputs) != len(self.weights):
+            raise ValueError("input and weights sizes don't match")
         return sigmoid(sum(inputs * self.weights) + self.bias)
+
+    def mutate_neuron(self, mutation_rate):
+        """
+        mutates the Neuron
+        :param mutation_rate: 0 < float < 1
+        :return:
+        """
+        new_weights = []
+        for weight in self.weights:
+            if random.random() < mutation_rate:
+                weight += random.gauss(0, 1)
+            new_weights.append(weight)
+        self.set_weights(np.array(new_weights))
+
+        # self.set_weights(
+        #     np.array(
+        #         [lambda weight: (weight + random.gauss(0, 1)) if random.random() < mutation_rate else weight, self.weights]
+        #     )
+        # )
+        if random.random() < mutation_rate:
+            self.set_bias(self.bias + random.gauss(0, 1))
 
     def set_weights(self, weights):
         """
@@ -85,6 +104,15 @@ class Layer:
             for i, neuron in enumerate(self.neurons):
                 neuron.set_bias(biases[i])
 
+    def mutate_layer(self, mutation_rate):
+        """
+        mutates a Layer
+        :param mutation_rate: 0 < float < 1
+        :return:
+        """
+        for neuron in self.neurons:
+            neuron.mutate_neuron(mutation_rate)
+
     def get_neuron_weights(self):
         """
         gets the weights of all the neurons in the layer
@@ -114,9 +142,10 @@ class NeuralNetwork:
 
     def __init__(self, layer_sizes):
         # Create the Layers
+        self.layer_sizes = layer_sizes
         self.layers = [Layer(layer_sizes[0], layer_sizes[0])]
         for i in range(1, len(layer_sizes)):
-            self.layers.append(Layer(layer_sizes[i], layer_sizes[i-1]))
+            self.layers.append(Layer(layer_sizes[i], layer_sizes[i - 1]))
 
     def predict(self, inputs):
         """
@@ -125,11 +154,28 @@ class NeuralNetwork:
         :return: outputs of the Neural Network
         """
         for layer in self.layers:
-            outputs = np.array([])
-            for neuron in layer.neurons:
-                outputs = np.append(outputs, neuron.fire(inputs))
-            inputs = outputs
+            inputs = np.array([neuron.fire(inputs) for neuron in layer.neurons])
         return inputs
+
+    def mutate(self, mutation_rate):
+        """
+        mutates the Network
+        :param mutation_rate: 0 < float < 1
+        :return:
+        """
+        for layer in self.layers:
+            layer.mutate_layer(mutation_rate)
+
+    def clone(self):
+        """
+        clones the Network
+        :return: NeuralNetwork
+        """
+        cloned_network = NeuralNetwork(self.layer_sizes)
+        for i in range(len(self.layers)):
+            cloned_network.set_layer(i, self.get_layer_weights(i), self.get_layer_biases(i))
+
+        return cloned_network
 
     def set_layer(self, layer_index, weights=None, biases=None):
         """
@@ -176,15 +222,14 @@ class NeuralNetwork:
             inputs = outputs
             print(outputs)
 
-
 # model = NeuralNetwork([2, 3, 1])
 
-# weights1 = np.array([np.array([random()])])
-# weights2 = np.array([np.array([random(), random()]), np.array([random(), random()])])
-# weights3 = np.array([np.array([random(), random(), random()]), np.array([random(), random(), random()]), np.array([random(), random(), random()])])
-# biases1 = np.array([random()])
-# biases2 = np.array([random(), random()])
-# biases3 = np.array([random(), random(), random()])
+# weights1 = np.array([random.np.array([random()])])
+# weights2 = np.array([random.np.array([random.random(), random()]), random.np.array([random.random(), random()])])
+# weights3 = np.array([random.np.array([random.random(), random.random(), random()]), random.np.array([random.random(), random.random(), random()]), random.np.array([random.random(), random.random(), random()])])
+# biases1 = random.np.array([random()])
+# biases2 = random.np.array([random.random(), random()])
+# biases3 = random.np.array([random.random(), random.random(), random()])
 #
 # model.set_layer(0, weights2, biases2)
 # model.set_layer(1, weights3, biases3)
