@@ -1,6 +1,6 @@
 import numpy as np
 
-from neural_network import NeuralNetwork
+import necessities
 
 # XOR dataset
 test_inputs = np.array([np.array([0, 0]), np.array([0, 1]), np.array([1, 0]), np.array([1, 1])])
@@ -11,15 +11,6 @@ population_size = 100
 generations = 200
 mutation_rate = 0.1
 network_size = [2, 10, 10, 1]
-
-
-# Function to initialize a population of neural networks
-def initialize_population():
-    population = []
-    for _ in range(population_size):
-        model = NeuralNetwork(network_size)
-        population.append(model)
-    return population
 
 
 # Function to evaluate the fitness of each neural network
@@ -33,26 +24,15 @@ def evaluate_fitness(network, test_inputs, test_outputs):
     return 1 / (1 + error)
 
 
-def get_top_percent_indexes(arr, percent):
-    if not arr:
-        return "Array is empty"
-
-    top_percent_count = int(len(arr) * percent / 100)
-    sorted_indexes = sorted(range(len(arr)), key=lambda i: arr[i])
-    top_percent_indexes = sorted_indexes[-top_percent_count:]
-
-    return top_percent_indexes
-
-
 # Genetic Algorithm
-population = initialize_population()
+population = necessities.initialize_population(population_size, network_size)
 
 # Training loop
 for generation in range(generations):
     # Evaluate fitness
     fitness_scores = [evaluate_fitness(network, test_inputs, test_outputs) for network in population]
 
-    top_40_fitness = get_top_percent_indexes(fitness_scores, 40)
+    top_40_fitness = necessities.get_top_percent_indexes(fitness_scores, 40)
 
     # Create next generation through crossover and mutation
     next_generation = []
@@ -63,7 +43,7 @@ for generation in range(generations):
         next_generation.append(population[top_40_fitness[i]])
         next_generation.append(clone)
 
-    top_20_fitness = get_top_percent_indexes(fitness_scores, 20)
+    top_20_fitness = necessities.get_top_percent_indexes(fitness_scores, 20)
     for i in range(len(top_20_fitness)):
         next_generation.append(population[top_20_fitness[i]])
 

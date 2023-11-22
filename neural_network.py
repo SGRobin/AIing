@@ -42,11 +42,6 @@ class Neuron:
             new_weights.append(weight)
         self.set_weights(np.array(new_weights))
 
-        # self.set_weights(
-        #     np.array(
-        #         [lambda weight: (weight + random.gauss(0, 1)) if random.random() < mutation_rate else weight, self.weights]
-        #     )
-        # )
         if random.random() < mutation_rate:
             self.set_bias(self.bias + random.gauss(0, 1))
 
