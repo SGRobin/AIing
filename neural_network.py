@@ -128,6 +128,14 @@ class Layer:
             biases.append(neuron.get_bias())
         return np.array(biases)
 
+    def print_layer(self):
+        """
+        prints the weights and biases of a single layer
+        :return: nothing
+        """
+        for neuron in self.neurons:
+            print(f"weights: {neuron.get_weights()} biases: {neuron.get_bias()}")
+
 
 class NeuralNetwork:
     """
@@ -137,10 +145,11 @@ class NeuralNetwork:
 
     def __init__(self, layer_sizes):
         # Create the Layers
-        self.layer_sizes = layer_sizes
         self.layers = [Layer(layer_sizes[0], layer_sizes[0])]
         for i in range(1, len(layer_sizes)):
             self.layers.append(Layer(layer_sizes[i], layer_sizes[i - 1]))
+
+        self.layer_sizes = layer_sizes
 
     def predict(self, inputs):
         """
@@ -205,7 +214,14 @@ class NeuralNetwork:
         """
         return self.layers[layer_index].get_neuron_biases()
 
-    def print_network(self, inputs):
+    def get_layer_sizes(self):
+        """
+        returns the size of the network (each layer)
+        :return: int array. example: [2, 5, 5, 1]
+        """
+        return self.layer_sizes
+
+    def print_network_outputs(self, inputs):
         """
         gets inputs for the Neural Network and prints it to see
         :param inputs: input values *numpy array
@@ -217,22 +233,12 @@ class NeuralNetwork:
             inputs = outputs
             print(outputs)
 
-# model = NeuralNetwork([2, 3, 1])
+    def print_network(self):
+        """
+        print the weights and biases of all teh layers in teh network
+        :return: nothing
+        """
+        for i in range(self.get_num_layers()):
+            print(f"layer: {i}")
+            self.layers[i].print_layer()
 
-# weights1 = np.array([random.np.array([random()])])
-# weights2 = np.array([random.np.array([random.random(), random()]), random.np.array([random.random(), random()])])
-# weights3 = np.array([random.np.array([random.random(), random.random(), random()]), random.np.array([random.random(), random.random(), random()]), random.np.array([random.random(), random.random(), random()])])
-# biases1 = random.np.array([random()])
-# biases2 = random.np.array([random.random(), random()])
-# biases3 = random.np.array([random.random(), random.random(), random()])
-#
-# model.set_layer(0, weights2, biases2)
-# model.set_layer(1, weights3, biases3)
-# model.set_layer(2, weights1, biases1)
-
-# model.print_network(np.array([1, 2]))
-# print(np.array([1, 2]))
-# model.predict(np.array([0, 0]))
-# current_weights = model.get_layer_weights(0)
-# mutated_weights = np.array([])
-# print(current_weights)

@@ -8,9 +8,9 @@ test_outputs = np.array([0, 1, 1, 0])
 
 # Genetic Algorithm parameters
 population_size = 100
-generations = 200
+generations = 1000
 mutation_rate = 0.1
-network_size = [2, 10, 10, 1]
+network_size = [2, 1, 1]
 
 
 # Function to evaluate the fitness of each neural network
@@ -43,9 +43,13 @@ for generation in range(generations):
         next_generation.append(population[top_40_fitness[i]])
         next_generation.append(clone)
 
+    top_10_fitness = necessities.get_top_percent_indexes(fitness_scores, 10)
+    for i in range(len(top_10_fitness)):
+        next_generation.append(population[top_10_fitness[i]])
+
     top_20_fitness = necessities.get_top_percent_indexes(fitness_scores, 20)
-    for i in range(len(top_20_fitness)):
-        next_generation.append(population[top_20_fitness[i]])
+    for i in range(0, len(top_20_fitness), 2):
+        next_generation.append(necessities.crossover(population[top_20_fitness[i]], population[top_20_fitness[i + 1]]))
 
     print(generation)
     population = next_generation
