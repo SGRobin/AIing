@@ -1,3 +1,4 @@
+import math
 import random
 
 import numpy as np
@@ -29,7 +30,7 @@ class Neuron:
             raise ValueError("input and weights sizes don't match")
         return sigmoid(sum(inputs * self.weights) + self.bias)
 
-    def mutate_neuron(self, mutation_rate):
+    def mutate_neuron(self, mutation_rate, mutation_range):
         """
         mutates the Neuron
         :param mutation_rate: 0 < float < 1
@@ -38,12 +39,12 @@ class Neuron:
         new_weights = []
         for weight in self.weights:
             if random.random() < mutation_rate:
-                weight += random.gauss(0, 1)
+                weight += random.gauss(0, mutation_range)
             new_weights.append(weight)
         self.set_weights(np.array(new_weights))
 
         if random.random() < mutation_rate:
-            self.set_bias(self.bias + random.gauss(0, 1))
+            self.set_bias(self.bias + random.gauss(0, mutation_range))
 
     def set_weights(self, weights):
         """
@@ -99,14 +100,14 @@ class Layer:
             for i, neuron in enumerate(self.neurons):
                 neuron.set_bias(biases[i])
 
-    def mutate_layer(self, mutation_rate):
+    def mutate_layer(self, mutation_rate, mutation_range):
         """
         mutates a Layer
         :param mutation_rate: 0 < float < 1
         :return:
         """
         for neuron in self.neurons:
-            neuron.mutate_neuron(mutation_rate)
+            neuron.mutate_neuron(mutation_rate, mutation_range)
 
     def get_neuron_weights(self):
         """
@@ -143,13 +144,14 @@ class NeuralNetwork:
     the initiator gets the size of all the layers [input size, hidden size, hidden size, output size]
     """
 
-    def __init__(self, layer_sizes):
+    def __init__(self, layer_sizes, num_of_inputs):
         # Create the Layers
-        self.layers = [Layer(layer_sizes[0], layer_sizes[0])]
+        self.layers = [Layer(layer_sizes[0], num_of_inputs)]
         for i in range(1, len(layer_sizes)):
             self.layers.append(Layer(layer_sizes[i], layer_sizes[i - 1]))
 
         self.layer_sizes = layer_sizes
+        self.num_of_inputs = num_of_inputs
 
     def predict(self, inputs):
         """
@@ -161,21 +163,21 @@ class NeuralNetwork:
             inputs = np.array([neuron.fire(inputs) for neuron in layer.neurons])
         return inputs
 
-    def mutate(self, mutation_rate):
+    def mutate(self, mutation_rate, mutation_range):
         """
         mutates the Network
         :param mutation_rate: 0 < float < 1
         :return:
         """
         for layer in self.layers:
-            layer.mutate_layer(mutation_rate)
+            layer.mutate_layer(mutation_rate, mutation_range)
 
     def clone(self):
         """
         clones the Network
         :return: NeuralNetwork
         """
-        cloned_network = NeuralNetwork(self.layer_sizes)
+        cloned_network = NeuralNetwork(self.layer_sizes, self.num_of_inputs)
         for i in range(len(self.layers)):
             cloned_network.set_layer(i, self.get_layer_weights(i), self.get_layer_biases(i))
 
