@@ -21,8 +21,8 @@ startOrientation = p.getQuaternionFromEuler([0, 0, 0])
 robot_id = p.loadURDF(urdf_file_path, startPos, startOrientation)
 
 # for stuff
-user_access = False
-hard_walk = True
+user_access = True
+hard_walk = False
 
 if user_access is True:
     joint_id = user_control.setup_user_control()

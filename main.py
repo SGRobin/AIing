@@ -3,16 +3,17 @@ import testing.xor_agent as xor_agent
 
 # Genetic Algorithm parameters
 population_size = 100
-num_of_populations = 5
+num_of_populations = 4
 max_generations = 500
 mutation_rate = 0.15
 mutation_range = 0.5
-network_size = [3, 1]
+network_size = [2, 1]
 num_of_inputs = 2
 mutation_percentage = 84
 crossover_percentage = 10
 keep_percentage = 6
 check_percentage = population_size / num_of_populations
+print(check_percentage)
 agent = xor_agent
 print_progress = True
 

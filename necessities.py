@@ -4,6 +4,7 @@ from neural_network import NeuralNetwork
 def initialize_population(population_size, network_size, num_of_inputs):
     """
     creates a new population with a population of NeuralNetworks with random weights and biases
+    :param num_of_inputs int
     :param population_size: int
     :param network_size: array [], with sizes of each layer
     :return:
@@ -49,9 +50,6 @@ def crossover(network_1: NeuralNetwork, network_2: NeuralNetwork):
         crossed_network.set_layer(i, network_1.get_layer_weights(i), network_1.get_layer_biases(i))
 
     return crossed_network
-
-
-# def get_best_average_fitness(population, keep_percentage):
 
 
 def train_generation(agent, population, mutation_rate, mutation_range, mutation_percentage, crossover_percentage,
@@ -113,17 +111,27 @@ def train_population(agent, max_generations, population, mutation_rate, mutation
     :param print_progress Boolean - prints the progress
     :return: trained_population[NeuralNetwork]
     """
-    average_fitness_array = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+
+    average_fitness_array = []
+    print(f"check_percentage {check_percentage}")
+    for i in range(int(check_percentage)):
+        average_fitness_array.append(i)
+    generation_checksum = 0
     for generation in range(max_generations):
         population, average_fitness = train_generation(agent, population, mutation_rate, mutation_range,
                                                        mutation_percentage, crossover_percentage, keep_percentage,
                                                        check_percentage)
 
+        print(average_fitness)
         average_fitness_array.pop()
         average_fitness_array.insert(0, average_fitness)
         if max(average_fitness_array) - min(
                 average_fitness_array) <= min(average_fitness_array) / 10000000000:
-            break
+            generation_checksum += 1
+            if generation_checksum >= check_percentage:
+                break
+        else:
+            generation_checksum = 0
 
         if print_progress:
             print(f"Generation {generation + 1}")
@@ -157,7 +165,7 @@ def train(agent, network_size, num_of_inputs, num_of_populations, max_generation
 
         trained_population = train_population(agent, max_generations, population, mutation_rate, mutation_range,
                                               mutation_percentage, crossover_percentage, keep_percentage,
-                                              print_progress)
+                                              check_percentage, print_progress)
         fitness_scores = [agent.evaluate_fitness(network) for network in trained_population]
         top_population_fitness = get_top_percent_indexes(fitness_scores, int(population_size / num_of_populations))
         if print_progress:
