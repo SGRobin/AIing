@@ -1,24 +1,31 @@
+import pickle
+
 import necessities
 import testing.xor_agent as xor_agent
+import robot_agent
 
+import Simulation.env_create as env
 # Genetic Algorithm parameters
+agent = robot_agent
 population_size = 100
-num_of_populations = 4
-max_generations = 500
+num_of_populations = 5
+max_generations = 300
 mutation_rate = 0.15
 mutation_range = 0.5
-network_size = [2, 1]
-num_of_inputs = 2
+network_size = [32, 18]
+num_of_inputs = 18
 mutation_percentage = 84
 crossover_percentage = 10
 keep_percentage = 6
 check_percentage = population_size / num_of_populations
-print(check_percentage)
-agent = xor_agent
 print_progress = True
+show_simulation = False
 
-if population_size % (mutation_percentage + crossover_percentage + keep_percentage) != 0:
+if (mutation_percentage + crossover_percentage + keep_percentage) % population_size != 0:
     raise ValueError("bad percentages")
+
+if agent == robot_agent:
+    env.load_simulation(show_simulation)
 
 # Get the best-performing network
 best_network = necessities.train(agent=agent,
@@ -36,9 +43,25 @@ best_network = necessities.train(agent=agent,
                                  print_progress=print_progress
                                  )
 
+
 # Test the best-performing network for xor agent
-predictions = []
-for i in range(len(xor_agent.test_inputs)):
-    predictions.append(best_network.predict(xor_agent.test_inputs[i]))
-print(f"Predictions: {predictions}")
-print(xor_agent.test_outputs)
+file_path = None
+if agent == xor_agent:
+    predictions = []
+    for i in range(len(xor_agent.test_inputs)):
+        predictions.append(best_network.predict(xor_agent.test_inputs[i]))
+    print(f"Predictions: {predictions}")
+    print(xor_agent.test_outputs)
+
+    file_path = "xor_network.pkl"
+
+if agent == robot_agent:
+
+    file_path = "robot_network.pkl"
+
+# Save the instance to a file
+with open(file_path, "wb") as file:
+    pickle.dump(best_network, file)
+
+if agent == robot_agent:
+    env.unload_simulation()

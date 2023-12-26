@@ -113,8 +113,8 @@ def train_population(agent, max_generations, population, mutation_rate, mutation
     """
 
     average_fitness_array = []
-    print(f"check_percentage {check_percentage}")
-    for i in range(int(check_percentage)):
+    print(int(check_percentage / (100 / len(population))))
+    for i in range(int(check_percentage / (100 / len(population)))):
         average_fitness_array.append(i)
     generation_checksum = 0
     for generation in range(max_generations):
@@ -122,7 +122,6 @@ def train_population(agent, max_generations, population, mutation_rate, mutation
                                                        mutation_percentage, crossover_percentage, keep_percentage,
                                                        check_percentage)
 
-        print(average_fitness)
         average_fitness_array.pop()
         average_fitness_array.insert(0, average_fitness)
         if max(average_fitness_array) - min(
@@ -170,7 +169,7 @@ def train(agent, network_size, num_of_inputs, num_of_populations, max_generation
         top_population_fitness = get_top_percent_indexes(fitness_scores, int(population_size / num_of_populations))
         if print_progress:
             print(f"Population number: {population_num + 1}")
-        for i in range(int(population_size / num_of_populations)):
+        for i in range(int(population_size / num_of_populations )):
             best_networks.append(trained_population[top_population_fitness[i]])
 
     trained_best_networks = train_population(agent, max_generations, best_networks, mutation_rate, mutation_range,

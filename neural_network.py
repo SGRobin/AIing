@@ -1,4 +1,3 @@
-import math
 import random
 
 import numpy as np
@@ -16,8 +15,8 @@ class Neuron:
     """
 
     def __init__(self, num_of_weights):
-        self.weights = np.array([random.random() for _ in range(num_of_weights)])
-        self.bias = random.random()
+        self.weights = np.array([random.uniform(-1, 1) for _ in range(num_of_weights)])
+        self.bias = random.uniform(-1, 1)
 
     def fire(self, inputs):
         """
@@ -243,4 +242,3 @@ class NeuralNetwork:
         for i in range(self.get_num_layers()):
             print(f"layer: {i}")
             self.layers[i].print_layer()
-
