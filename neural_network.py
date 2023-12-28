@@ -1,6 +1,6 @@
 import random
-
-import numpy as np
+# import numpy as np
+import cupy as np
 
 
 def sigmoid(x):
@@ -35,12 +35,10 @@ class Neuron:
         :param mutation_rate: 0 < float < 1
         :return:
         """
-        new_weights = []
-        for weight in self.weights:
+
+        for i in range(len(self.weights)):
             if random.random() < mutation_rate:
-                weight += random.gauss(0, mutation_range)
-            new_weights.append(weight)
-        self.set_weights(np.array(new_weights))
+                self.weights[i] += random.gauss(0, mutation_range)
 
         if random.random() < mutation_rate:
             self.set_bias(self.bias + random.gauss(0, mutation_range))
@@ -83,7 +81,7 @@ class Layer:
     """
 
     def __init__(self, size, last_layer_size):
-        self.neurons = np.array(list(Neuron(last_layer_size) for _ in range(size)))
+        self.neurons = [Neuron(last_layer_size) for _ in range(size)]
 
     def set_values(self, weights=None, biases=None):
         """

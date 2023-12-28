@@ -6,20 +6,21 @@ import robot_agent
 
 import Simulation.env_create as env
 # Genetic Algorithm parameters
-agent = robot_agent
+agent = xor_agent
 population_size = 100
 num_of_populations = 5
 max_generations = 300
 mutation_rate = 0.15
 mutation_range = 0.5
-network_size = [32, 18]
-num_of_inputs = 18
+network_size = [2, 1]
+num_of_inputs = 2
 mutation_percentage = 84
 crossover_percentage = 10
 keep_percentage = 6
 check_percentage = population_size / num_of_populations
 print_progress = True
-show_simulation = False
+show_simulation = True
+save_progress = False
 
 if (mutation_percentage + crossover_percentage + keep_percentage) % population_size != 0:
     raise ValueError("bad percentages")
@@ -60,8 +61,9 @@ if agent == robot_agent:
     file_path = "robot_network.pkl"
 
 # Save the instance to a file
-with open(file_path, "wb") as file:
-    pickle.dump(best_network, file)
+if save_progress:
+    with open(file_path, "wb") as file:
+        pickle.dump(best_network, file)
 
 if agent == robot_agent:
     env.unload_simulation()

@@ -113,7 +113,6 @@ def train_population(agent, max_generations, population, mutation_rate, mutation
     """
 
     average_fitness_array = []
-    print(int(check_percentage / (100 / len(population))))
     for i in range(int(check_percentage / (100 / len(population)))):
         average_fitness_array.append(i)
     generation_checksum = 0

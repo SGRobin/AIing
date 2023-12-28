@@ -8,5 +8,5 @@ with open(file_path, "rb") as file:
     loaded_network = pickle.load(file)\
 
 env.load_simulation(True)
-env.run_simulation(loaded_network, True, 2000)
+env.run_simulation(loaded_network, True, 5000)
 env.unload_simulation()
