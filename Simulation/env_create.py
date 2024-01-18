@@ -1,7 +1,7 @@
 import time
 
-# import numpy as np
-import cupy as np
+import numpy as np
+# import cupy as np
 import pybullet as p
 import pybullet_data
 
@@ -21,9 +21,7 @@ def sigmoid(x):
 
 def load_simulation(gui=False):
     p.connect(p.GUI if gui else p.DIRECT)  # or p.DIRECT for non-graphical version
-    p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
-    p.setGravity(0, 0, -9.81)
-    p.loadURDF("plane.urdf")
+
     global robot_id
     robot_id = p.loadURDF(urdf_file_path, startPos, startOrientation)
     for link_id in link_ids:
@@ -32,6 +30,20 @@ def load_simulation(gui=False):
                          lateralFriction=constants.LINEAR_FRICTION,
                          angularDamping=constants.ANGULAR_FRICTION,
                          frictionAnchor=1)
+
+    if gui:
+        focus_position, _ = p.getBasePositionAndOrientation(robot_id)
+        p.resetDebugVisualizerCamera(cameraDistance=1, cameraYaw=135, cameraPitch=-40,
+                                     cameraTargetPosition=focus_position)
+    p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
+    p.setGravity(0, 0, -9.81)
+
+    p.setRealTimeSimulation(0)
+    p.setTimeStep(1 / 60)
+    # p.setPhysicsEngineParameter(numSolverIterations=3)
+    # p.setPhysicsEngineParameter(numSubSteps=1)
+    # p.setPhysicsEngineParameter(contactERP=0.9, frictionERP=0.2)
+    p.loadURDF("plane.urdf")
 
 
 def unload_simulation():
@@ -43,27 +55,34 @@ def reset_joints():
         p.resetJointState(robot_id, joint, 0)
 
 
-def run_simulation(network=None, wait=False, time_to_run=2000, network_controlled=True, hard_walk=False):
+simulations_ran = 0.0
+total_time = 0.0
+
+
+def run_simulation(network=None, wait=False, time_to_run=1000, network_controlled=True, hard_walk=False):
+    global total_time, simulations_ran
     reset_joints()
     directions = [0] * 18
-    if hard_walk is True:
-        for i in range(time_to_run):
-            hard.step(robot_id, i)
-            p.stepSimulation()
+
+    angles_time = 0
+    prediction_time = 0
+    motor_set_time = 0
+    simulation_execution_time = 0
 
     if network_controlled is True:
         for i in range(time_to_run):
             angles = [p.getJointState(robot_id, link_id)[0] for link_id in link_ids]
+
             if i % 10 == 0:
                 moving_directions = network.predict(angles)
-                # print("Neural Network Output:", moving_directions)
-                for j in range(len(moving_directions)):
-                    if moving_directions[j] < 0.4:
-                        directions[j] = -0.05
-                    elif moving_directions[j] > 0.6:
-                        directions[j] = 0.05
-                    else:
-                        directions[j] = 0
+                directions = [-0.02 if d < 0.4 else 0.02 if d > 0.6 else 0 for d in moving_directions]
+
+                if i % 50 == 0:
+                    robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
+                    if abs(robot_orientation[3]) < 0.95:
+                        distance = -robot_position[0]
+                        p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
+                        return distance - 1
 
             for j, link_id in enumerate(link_ids):
                 p.setJointMotorControl2(robot_id, link_id, p.POSITION_CONTROL,
@@ -71,9 +90,20 @@ def run_simulation(network=None, wait=False, time_to_run=2000, network_controlle
                                         force=constants.MOTOR_MAX_FORCE,
                                         maxVelocity=constants.MOTOR_MAX_VELOCITY)
 
+            # start_time = time.time()
+            p.stepSimulation()
+            # end_time = time.time()
+            # simulation_execution_time += end_time - start_time
+            if wait is True:
+                time.sleep(0.006)
+
+    else:
+        for i in range(time_to_run):
+            hard.step(robot_id, i)
             p.stepSimulation()
             if wait is True:
-                time.sleep(0.01)
+                time.sleep(0.006)
+    # print(f"simulation_execution_time: {simulation_execution_time} seconds\n")
 
     robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
     distance = -robot_position[0]

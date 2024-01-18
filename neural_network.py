@@ -1,6 +1,6 @@
 import random
-# import numpy as np
-import cupy as np
+import numpy as np
+# import cupy as np
 
 
 def sigmoid(x):
@@ -15,8 +15,8 @@ class Neuron:
     """
 
     def __init__(self, num_of_weights):
-        self.weights = np.array([random.uniform(-1, 1) for _ in range(num_of_weights)])
-        self.bias = random.uniform(-1, 1)
+        self.weights = np.array([random.uniform(-5, 5) for _ in range(num_of_weights)])
+        self.bias = random.uniform(-5, 5)
 
     def fire(self, inputs):
         """
@@ -64,7 +64,7 @@ class Neuron:
         gets the weights
         :return: np.array() of weights
         """
-        return self.weights
+        return np.array(self.weights)
 
     def get_bias(self):
         """

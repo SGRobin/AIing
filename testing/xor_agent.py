@@ -1,5 +1,5 @@
-# import numpy as np
-import cupy as np
+import numpy as np
+# import cupy as np
 
 # XOR dataset
 test_inputs = np.array([np.array([0, 0]), np.array([0, 1]), np.array([1, 0]), np.array([1, 1])])
