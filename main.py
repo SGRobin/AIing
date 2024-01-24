@@ -10,31 +10,16 @@ from worms import worm_agent
 # Genetic Algorithm parameters
 agent = worm_agent
 # agent = robot_agent
-population_size = 50
-num_of_populations = 1
-max_generations = 5000
-mutation_rate = 0.15
-mutation_range = 0.5
-# network_size = [36, 54, 36, 18]
-network_size = [36, 18]
+# agent =xor_agent
+
+network_size = [36, 54, 36, 18]
+# network_size = [2, 1]
 num_of_inputs = 18
 
-# mutation_percentage = 83
-crossover_percentage = 0
-keep_percentage = 4
-mutation_percentage = 100 - crossover_percentage - keep_percentage
 
-check_percentage = 10
 print_progress = True
 show_simulation = False
 save_progress = True
-
-if mutation_percentage + crossover_percentage + keep_percentage != 100:
-    raise ValueError("bad percentages")
-for percentage in [(mutation_percentage / 2), crossover_percentage, keep_percentage, check_percentage]:
-    percentage_pop_size = population_size * (0.01 * percentage)
-    if not percentage_pop_size == float(int(percentage_pop_size)):
-        raise ValueError("bad percentages")
 
 if agent == robot_agent:
     env.load_simulation(show_simulation)
@@ -43,15 +28,6 @@ if agent == robot_agent:
 best_network = necessities.train(agent=agent,
                                  network_size=network_size,
                                  num_of_inputs=num_of_inputs,
-                                 num_of_populations=num_of_populations,
-                                 max_generations=max_generations,
-                                 population_size=population_size,
-                                 mutation_rate=mutation_rate,
-                                 mutation_range=mutation_range,
-                                 mutation_percentage=mutation_percentage,
-                                 crossover_percentage=crossover_percentage,
-                                 keep_percentage=keep_percentage,
-                                 check_percentage=check_percentage,
                                  print_progress=print_progress,
                                  save_progress=save_progress)
 

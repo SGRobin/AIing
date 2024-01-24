@@ -2,7 +2,7 @@ import pickle
 
 from testing import xor_agent
 
-file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\xor_network.pkl"
+file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\save_network_1.pkl"
 
 # Now, you can load the instance back from the file
 with open(file_path, "rb") as file:

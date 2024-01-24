@@ -1,3 +1,4 @@
+import math
 import random
 import numpy as np
 # import cupy as np
@@ -15,8 +16,8 @@ class Neuron:
     """
 
     def __init__(self, num_of_weights):
-        self.weights = np.array([random.uniform(-5, 5) for _ in range(num_of_weights)])
-        self.bias = random.uniform(-5, 5)
+        self.weights = np.array([random.uniform(-3, 3) for _ in range(num_of_weights)])
+        self.bias = random.uniform(-3, 3)
 
     def fire(self, inputs):
         """
@@ -28,6 +29,7 @@ class Neuron:
         if len(inputs) != len(self.weights):
             raise ValueError("input and weights sizes don't match")
         return sigmoid(sum(inputs * self.weights) + self.bias)
+        # return math.tanh(sum(inputs * self.weights) + self.bias)
 
     def mutate_neuron(self, mutation_rate, mutation_range):
         """

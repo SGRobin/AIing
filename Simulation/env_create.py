@@ -9,7 +9,7 @@ import Simulation.hard_code_walk as hard
 import constants
 
 link_ids = [2, 3, 4, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29]
-urdf_file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\Simulation\\models\\crab_model.urdf.xml"
+URDF_file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\Simulation\\models\\crab_model.urdf.xml"
 startPos = [0, 0, 0.18]
 startOrientation = p.getQuaternionFromEuler([0, 0, 0])
 robot_id = None
@@ -23,7 +23,7 @@ def load_simulation(gui=False):
     p.connect(p.GUI if gui else p.DIRECT)  # or p.DIRECT for non-graphical version
 
     global robot_id
-    robot_id = p.loadURDF(urdf_file_path, startPos, startOrientation)
+    robot_id = p.loadURDF(URDF_file_path, startPos, startOrientation)
     for link_id in link_ids:
         p.changeDynamics(robot_id,
                          link_id,
@@ -59,15 +59,10 @@ simulations_ran = 0.0
 total_time = 0.0
 
 
-def run_simulation(network=None, wait=False, time_to_run=1000, network_controlled=True, hard_walk=False):
+def run_simulation(network=None, wait=False, time_to_run=3000, network_controlled=True, hard_walk=False):
     global total_time, simulations_ran
     reset_joints()
     directions = [0] * 18
-
-    angles_time = 0
-    prediction_time = 0
-    motor_set_time = 0
-    simulation_execution_time = 0
 
     if network_controlled is True:
         for i in range(time_to_run):

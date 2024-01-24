@@ -1,22 +1,29 @@
 import pickle
 
-import numpy as np
-from matplotlib import pyplot as plt
-
-from constants import MAX_STUCK_GENERATIONS
 from neural_network import NeuralNetwork
 
+POPULATION_SIZE = 100
+NUM_OF_POPULATIONS = 5
+MAX_GENERATIONS = 5000
+MUTATION_RATE = 0.5
+MUTATION_RANGE = 0.5
+CROSSOVER = 3
+KEEP_CHAMPIONS = 1
+NEW_RANDOS = 2
+CHECK_PERCENTAGE = 10
+MAX_STUCK_GENERATIONS = 5
+SAVE_GENERATION = False
 
-def initialize_population(population_size, network_size, num_of_inputs):
+
+def initialize_population(network_size, num_of_inputs):
     """
     creates a new population with a population of NeuralNetworks with random weights and biases
     :param num_of_inputs int
-    :param population_size: int
     :param network_size: array [], with sizes of each layer
     :return:
     """
     population = []
-    for _ in range(population_size):
+    for _ in range(POPULATION_SIZE):
         model = NeuralNetwork(network_size, num_of_inputs)
         population.append(model)
     return population
@@ -41,18 +48,27 @@ def crossover(network_1: NeuralNetwork, network_2: NeuralNetwork):
     return crossed_network
 
 
-def train_generation(agent, population, mutation_rate, mutation_range, mutation_percentage, crossover_percentage,
-                     keep_percentage, check_percentage):
+def save(best_network):
+    """
+    saves the network it gets as a class
+    :param best_network: NeuralNetwork
+    :return: Nothing
+    """
+    file_path = f"networks/save_network_generation.pkl"
+
+    with open(file_path, "wb") as file:
+        pickle.dump(best_network, file)
+
+
+def train_generation(agent, population, mutation_range, mutation_rate, network_size, num_of_inputs):
     """
     trains one single generation by using mutation and crossovers
+    :param network_size: [x, y] - size of neural network
+    :param num_of_inputs: int - number of inputs in the neural network
     :param agent: agent.py - the agent we use
     :param population: population[NeuralNetwork] - the population that is being trained
     :param mutation_rate: int - the rate of mutation
     :param mutation_range: int - the range of mutation
-    :param mutation_percentage: int - mutation percentage
-    :param crossover_percentage: int - crossover percentage
-    :param keep_percentage: int - percentage we keep as is
-    :param check_percentage: int - percentage that we check if it's time to stop generations
     :return: trained_population[NeuralNetwork]
     """
     # calculate the fitness scores of the population
@@ -61,25 +77,33 @@ def train_generation(agent, population, mutation_rate, mutation_range, mutation_
     # sort the population by fitness scores
     population = sorted(population, key=lambda obj: fitness_scores[population.index(obj)], reverse=True)
 
-    # create next generation and append all the mutations, crossovers and top networks of this population
     next_generation = []
-    for i in range(int(((len(population) * mutation_percentage) / 2) / 100)):
-        for _ in range(2):
-            mutated_kid = population[i].clone()
-            mutated_kid.mutate(mutation_rate, mutation_range)
-            next_generation.append(mutated_kid)
 
-    for i in range(int((len(population) * crossover_percentage) / 100)):
-        next_generation.append(crossover(population[i], population[i]))
-
-    for i in range(int((len(population) * keep_percentage) / 100)):
+    # keep the good ones
+    for i in range(int(KEEP_CHAMPIONS)):
         next_generation.append(population[i].clone())
+
+    # add the crossovers
+    for i in range(int(CROSSOVER)):
+        next_generation.append(crossover(population[i], population[i + 1]))
+
+    # add random networks to the mix
+    for i in range(int(NEW_RANDOS)):
+        next_generation.append(NeuralNetwork(network_size, num_of_inputs))
+
+    # Mutate the kids
+    current_kid = 0
+    while len(next_generation) < POPULATION_SIZE:
+        mutated_kid = population[current_kid].clone()
+        mutated_kid.mutate(mutation_rate, mutation_range)
+        next_generation.append(mutated_kid)
+        current_kid += 1
 
     # print(f"size of population is: {len(population)}")
     # get the average fitness of the top check_percentage% to see if it's time to stop training
     average_top_fitness = sum(
-        sorted(fitness_scores, reverse=True)[:int(len(fitness_scores) * (check_percentage / 100))]) / int(
-        len(fitness_scores) * (check_percentage / 100))
+        sorted(fitness_scores, reverse=True)[:int(len(fitness_scores) * (CHECK_PERCENTAGE / 100))]) / int(
+        len(fitness_scores) * (CHECK_PERCENTAGE / 100))
 
     # Print Top
     array = []
@@ -90,35 +114,30 @@ def train_generation(agent, population, mutation_rate, mutation_range, mutation_
     return next_generation, average_top_fitness
 
 
-def train_population(agent, max_generations, population, mutation_rate, mutation_range, mutation_percentage,
-                     crossover_percentage, keep_percentage, check_percentage, print_progress=True, save_progress=False):
+def train_population(agent, population, network_size, num_of_inputs, print_progress=True):
     """
     trains a population over "generation" generations
+    :param network_size: [x, y] - size of neural network
+    :param num_of_inputs: int - number of inputs in the neural network
     :param agent: agent.py - the agent we use
-    :param max_generations the number of maximum generations
     :param population: population[NeuralNetwork] - the population that is being trained
-    :param mutation_rate: int - the rate of mutation
-    :param mutation_range: int - the range of mutation
-    :param mutation_percentage: int - mutation percentage
-    :param crossover_percentage: int - crossover percentage
-    :param keep_percentage: int - percentage we keep as is
-    :param check_percentage: int - percentage that we check if it's time to stop generations
     :param print_progress Boolean - prints the progress
     :return: trained_population[NeuralNetwork]
     """
     total_array = []
     average_fitness_array = []
-    for i in range(int(check_percentage / (100 / len(population)))):
+    for i in range(int(CHECK_PERCENTAGE / (100 / len(population)))):
         average_fitness_array.append(i)
     num_stuck_generations = 0
+    mutation_range = MUTATION_RANGE
+    mutation_rate = MUTATION_RATE
 
-    for generation in range(max_generations):
+    for generation in range(MAX_GENERATIONS):
         if print_progress:
             print(f"Generation {generation + 1} mutation range {mutation_range}")
 
-        population, average_fitness = train_generation(agent, population, mutation_rate, mutation_range,
-                                                       mutation_percentage, crossover_percentage, keep_percentage,
-                                                       check_percentage)
+        population, average_fitness = train_generation(agent, population, mutation_range, mutation_rate, network_size,
+                                                       num_of_inputs)
 
         average_fitness_array.pop()
         average_fitness_array.insert(0, average_fitness)
@@ -130,70 +149,46 @@ def train_population(agent, max_generations, population, mutation_rate, mutation
             num_stuck_generations = 0
 
         if num_stuck_generations >= MAX_STUCK_GENERATIONS:
-            # mutation_range = 2 * base_mutation_range
-            # mutation_rate = 2 * base_mutation_rate
             mutation_range *= 1.4
             if mutation_range > 0.5:
                 mutation_range = 0.01
         else:
             mutation_range *= 0.9
+            if mutation_range < 0.05:
+                mutation_range = 0.05
 
         if num_stuck_generations >= MAX_STUCK_GENERATIONS * 5:
             break
 
-        # else:
-        #     mutation_range = base_mutation_range
-        #     mutation_rate = base_mutation_rate
-        #     num_stuck_generations = 0
-
         # Save it:
-        save(population[0])
+        if SAVE_GENERATION:
+            save(population[0])
 
     # # Show Graph:
-    # time_steps = np.arange(1, len(total_array) + 1)
+    # time_steps = np.arrange(1, len(total_array) + 1)
     # plt.plot(time_steps, np.array(total_array))
     # plt.show()
     return population
 
 
-def save(best_network):
-    file_path = f"networks/save_worm_network_generation.pkl"
-
-    with open(file_path, "wb") as file:
-        pickle.dump(best_network, file)
-
-
-def train(agent, network_size, num_of_inputs, num_of_populations, max_generations, population_size, mutation_rate,
-          mutation_range, mutation_percentage,
-          crossover_percentage, keep_percentage, check_percentage, print_progress, save_progress=False):
+def train(agent, network_size, num_of_inputs, print_progress, save_progress=False):
     """
-    traines "num_of_populations" populations and then merges them and trained the best of each together
+    Trains "num_of_populations" populations and then merges them and trained the best of each together
     :param agent: agent.py - the agent we use
     :param network_size: [x, y] - size of neural network
     :param num_of_inputs: int - number of inputs in the neural network
-    :param num_of_populations: int - number of populations we train and then merge
-    :param max_generations: int - number of maximum generations each population trains
-    :param population_size: int - size of each population
-    :param mutation_rate: int - the rate of mutation
-    :param mutation_range: int - the range of mutation
-    :param mutation_percentage: int - mutation percentage
-    :param crossover_percentage: int - crossover percentage
-    :param keep_percentage: int - percentage we keep as is
-    :param check_percentage: int - percentage that we check if it's time to stop generations
     :param print_progress Boolean - prints the progress
     :param save_progress: Boolean - do you save during runs
     :return: NeuralNetwork - the best network
     """
     best_networks = []
     # Training loop
-    for population_num in range(num_of_populations):
+    for population_num in range(NUM_OF_POPULATIONS):
         if print_progress:
             print(f"Population number {population_num + 1}:")
-        population = initialize_population(population_size, network_size, num_of_inputs)
+        population = initialize_population(network_size, num_of_inputs)
 
-        trained_population = train_population(agent, max_generations, population, mutation_rate, mutation_range,
-                                              mutation_percentage, crossover_percentage, keep_percentage,
-                                              check_percentage, print_progress, save_progress)
+        trained_population = train_population(agent, population, network_size, num_of_inputs, print_progress)
 
         # calculate the fitness scores of the population
         fitness_scores = [agent.evaluate_fitness(network) for network in population]
@@ -201,7 +196,7 @@ def train(agent, network_size, num_of_inputs, num_of_populations, max_generation
         # sort the population by fitness scores
         population = sorted(population, key=lambda obj: fitness_scores[population.index(obj)], reverse=True)
 
-        for i in range(int(population_size / num_of_populations)):
+        for i in range(int(POPULATION_SIZE / NUM_OF_POPULATIONS)):
             best_networks.append(trained_population[i])
 
         if save_progress:
@@ -211,9 +206,7 @@ def train(agent, network_size, num_of_inputs, num_of_populations, max_generation
             with open(file_path, "wb") as file:
                 pickle.dump(best_network, file)
 
-    trained_best_networks = train_population(agent, max_generations, best_networks, mutation_rate, mutation_range,
-                                             mutation_percentage, crossover_percentage, keep_percentage,
-                                             check_percentage, print_progress)
+    trained_best_networks = train_population(agent, best_networks, network_size, num_of_inputs, print_progress)
     # Get the best-performing network
     best_network = max(trained_best_networks, key=lambda network: agent.evaluate_fitness(network))
     return best_network

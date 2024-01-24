@@ -4,40 +4,55 @@ import sys
 
 import pygame
 
-pygame.init()
+global screen
+global circle_radius
+global clock
 
-# Set up the display
-width, height = 1200, 900
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Moving Nigga")
 
-# Set up the circle
-circle_radius = 10
-clock = pygame.time.Clock()
+def draw_window():
+    global screen
+    global circle_radius
+    global clock
+    # Set up the display
+    width, height = 1200, 900
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption("Worming Window")
+
+    # Set up the circle
+    circle_radius = 10
+    clock = pygame.time.Clock()
+
+    pygame.init()
 
 
 DEFAULT_EDGE_LENGTH = 100.0
 COMPRESSED_EDGE_LENGTH = 50
-FLOOR_Y = 100
-KONSTANT = 0.3
-FRICTION = 0.1
-GROUND_FRICTION = 0.4
-GRABITY = 1
+FLOOR_Y = 400
+CONSTANT = 0.6
+# FRICTION = 0.2
+FRICTION = 0.3
+GROUND_FRICTION = 0.8
+GRAVITY = 1
 
 
 class WormSimulation:
+    """
+    Represents the worm
+    all the vertices and edges
+    """
+
     def __init__(self):
         horizontal_vertices = 10
         self.vertices = []
         self.edges = []
         self.controlled_edges = []
-        last_vertex_1 = Vertex(0, 0)
-        last_vertex_2 = Vertex(0, DEFAULT_EDGE_LENGTH)
+        last_vertex_1 = Vertex(0, FLOOR_Y - DEFAULT_EDGE_LENGTH)
+        last_vertex_2 = Vertex(0, FLOOR_Y)
         self.vertices.extend([last_vertex_1, last_vertex_2])
         self.edges.append(Edge(last_vertex_1, last_vertex_2))
         for x in range(1, horizontal_vertices):
-            new_vertex_1 = Vertex(x * DEFAULT_EDGE_LENGTH, 0)
-            new_vertex_2 = Vertex(x * DEFAULT_EDGE_LENGTH, DEFAULT_EDGE_LENGTH)
+            new_vertex_1 = Vertex(x * DEFAULT_EDGE_LENGTH, FLOOR_Y - DEFAULT_EDGE_LENGTH)
+            new_vertex_2 = Vertex(x * DEFAULT_EDGE_LENGTH, FLOOR_Y)
             self.vertices.extend([new_vertex_1, new_vertex_2])
 
             # Vertical edge
@@ -60,25 +75,42 @@ class WormSimulation:
             last_vertex_2 = new_vertex_2
 
     def run_simulation(self, network, show_simulation):
-        for _ in range(20):
+        """
+        runs the simulation for a set amount of frames
+        :param network: NeuralNetwork
+        :param show_simulation: Boolean - decides weather to show the simulation
+        :return: float - distance traveled
+        """
+        if show_simulation:
+            draw_window()
+        for _ in range(60):
             inputs = self.get_network_inputs()
             moving_directions = network.predict(inputs)
             self.fire_inputs(moving_directions, 4, show_simulation)
         return self.get_progress()
 
     def fire_inputs(self, inputs, physics_steps, show_simulation):
-        for input, edge in zip(inputs, self.controlled_edges):
-            if input > 0.5:
-                edge.length = COMPRESSED_EDGE_LENGTH
-            else:
-                edge.length = DEFAULT_EDGE_LENGTH
-
+        """
+        function that gets the inputs for the network, runs them through the network,
+        and translates the outputs into movements
+        :param inputs: array of inputs
+        :param physics_steps: int - how many steps to runs in the simulation with these inputs
+        :param show_simulation: Boolean
+        :return: Nothing
+        """
+        for network_input, edge in zip(inputs, self.controlled_edges):
+            edge.length = COMPRESSED_EDGE_LENGTH + network_input * (DEFAULT_EDGE_LENGTH - COMPRESSED_EDGE_LENGTH)
         for _ in range(physics_steps):
             self.simulate_step(show_simulation)
 
     def simulate_step(self, show_simulation):
+        """
+        progresses a single step in the simulation
+        :param show_simulation: Boolean
+        :return: Nothing
+        """
         for vertex in self.vertices:
-            vertex.force = Vector(0, GRABITY)
+            vertex.force = Vector(0, GRAVITY)
 
         for edge in self.edges:
             force = edge.get_force()
@@ -98,9 +130,13 @@ class WormSimulation:
             vertex.position.x = vertex.position.x + vertex.velocity.x
 
         if show_simulation:
-            draw_the_shit(self)
+            draw_worm(self)
 
     def get_progress(self):
+        """
+        gets the distance travelled
+        :return: float - distance
+        """
         middle_x = 0
         for v in self.vertices:
             middle_x += v.position.x
@@ -108,36 +144,78 @@ class WormSimulation:
         return middle_x
 
     def get_network_inputs(self):
+        """
+        translates position of the worm into network inputs
+        :return: array[inputs]
+        """
+        # return [((e.get_length() - COMPRESSED_EDGE_LENGTH) / (DEFAULT_EDGE_LENGTH - COMPRESSED_EDGE_LENGTH) - 1) * 2
+        #         for e in self.controlled_edges]
         return [(e.get_length() - COMPRESSED_EDGE_LENGTH) / (DEFAULT_EDGE_LENGTH - COMPRESSED_EDGE_LENGTH)
                 for e in self.controlled_edges]
 
 
 class Vertex:
+    """
+    A vertex is a corner point of a polygon
+    """
+
     def __init__(self, x, y):
+        """
+        initialize
+        :param x: position
+        :param y: position
+        """
         self.position = Vector(x, y)
         self.velocity = Vector()
         self.force = Vector()
 
 
 class Edge:
+    """
+    one of the edges of the worm (lines)
+    """
+
     def __init__(self, v1, v2, length=DEFAULT_EDGE_LENGTH):
+        """
+        initialize
+        :param v1: Vertex
+        :param v2: Vertex
+        :param length: float
+        """
         self.length = length
         self.v1 = v1
         self.v2 = v2
 
     def get_force(self):
+        """
+        gets the force applied on it
+        :return: float
+        """
         diff = self.v1.position.minus(self.v2.position)
         actual_length = diff.length()
-        force = KONSTANT * (self.length - actual_length)
+        force = CONSTANT * (self.length - actual_length)
         return Vector.from_cartesian(force, diff.angle())
 
     def get_length(self):
+        """
+        gets length
+        :return: float
+        """
         diff = self.v1.position.minus(self.v2.position)
         return diff.length()
 
 
 class Vector:
+    """
+    Vector
+    """
+
     def __init__(self, x=0, y=0):
+        """
+        initialize
+        :param x: x
+        :param y: y
+        """
         self.x = x
         self.y = y
 
@@ -164,7 +242,12 @@ class Vector:
         return Vector(math.cos(angle) * length, math.sin(angle) * length)
 
 
-def draw_the_shit(worm):
+def draw_worm(current_worm):
+    """
+    draws the worm
+    :param current_worm: WormSimulation
+    :return: Nothing
+    """
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -174,15 +257,16 @@ def draw_the_shit(worm):
     screen.fill((255, 255, 255))
 
     # Draw the circle
-    for vertex in worm.vertices:
+    for vertex in current_worm.vertices:
         pygame.draw.circle(screen, (0, 0, 255), (vertex.position.x, vertex.position.y), circle_radius)
 
-    for edge in worm.edges:
+    for edge in current_worm.edges:
         pygame.draw.line(screen, (0, 0, 0),
                          (edge.v1.position.x, edge.v1.position.y),
                          (edge.v2.position.x, edge.v2.position.y), 2)  # 2 is the line thickness
 
-    pygame.draw.line(screen, (0, 0, 0), (0, FLOOR_Y + circle_radius), (10000, FLOOR_Y + circle_radius), 2)  # 2 is the line thickness
+    pygame.draw.line(screen, (0, 0, 0), (0, FLOOR_Y + circle_radius), (10000, FLOOR_Y + circle_radius),
+                     2)  # 2 is the line thickness
 
     # Update the display
     pygame.display.flip()
@@ -191,10 +275,11 @@ def draw_the_shit(worm):
     clock.tick(30)
 
 
+# Runs the simulation with visual to let one network walk
 if __name__ == '__main__':
-    file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\save_worm_network_generation.pkl"
+    file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\save_network_generation.pkl"
 
-    # Now, you can load the instance back from the file
+    # Load the instance from the file
     with open(file_path, "rb") as file:
         loaded_network = pickle.load(file)
     worm = WormSimulation()
