@@ -90,14 +90,14 @@ def run_simulation(network=None, wait=False, time_to_run=3000, network_controlle
             # end_time = time.time()
             # simulation_execution_time += end_time - start_time
             if wait is True:
-                time.sleep(0.006)
+                time.sleep(0.004)
 
     else:
         for i in range(time_to_run):
             hard.step(robot_id, i)
             p.stepSimulation()
             if wait is True:
-                time.sleep(0.006)
+                time.sleep(0.001)
     # print(f"simulation_execution_time: {simulation_execution_time} seconds\n")
 
     robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)

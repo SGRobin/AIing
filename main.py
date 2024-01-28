@@ -8,8 +8,8 @@ import Simulation.env_create as env
 from worms import worm_agent
 
 # Genetic Algorithm parameters
-agent = worm_agent
-# agent = robot_agent
+# agent = worm_agent
+agent = robot_agent
 # agent =xor_agent
 
 network_size = [36, 54, 36, 18]
@@ -18,7 +18,7 @@ num_of_inputs = 18
 
 
 print_progress = True
-show_simulation = False
+show_simulation = True
 save_progress = True
 
 if agent == robot_agent:
