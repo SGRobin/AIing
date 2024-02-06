@@ -80,17 +80,15 @@ def run_simulation(network=None, wait=False, time_to_run=2000, network_controlle
             if i % 45 == 0:
                 robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
                 # give the reward
-                if -robot_position[0] - distance <= 0.01:
-                    reward -= 0.001
-                    # reward-= 0.002 #TODO ?
+
                 reward += -robot_position[0] - distance
                 if robot_position[2] <= 0.05:
-                    reward -= 0.001
+                    reward -= 0.002
 
                 distance = -robot_position[0]
-                if abs(robot_orientation[3]) < 0.97:# 0.98 #TODO ?
-                    p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
-                    return distance - 1
+                # if abs(robot_orientation[3]) < 0.97:# 0.98 #TODO ?
+                #     p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
+                #     return distance - 1
 
             for j, link_id in enumerate(link_ids):
                 p.setJointMotorControl2(robot_id, link_id, p.POSITION_CONTROL,
@@ -113,8 +111,10 @@ def run_simulation(network=None, wait=False, time_to_run=2000, network_controlle
                 robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
                 # give the reward
                 reward += -robot_position[0] - distance
+
                 if robot_position[2] <= 0.05:
-                    reward -= 0.01
+                    reward -= 0.002
+                    print("wololo")
 
                 distance = -robot_position[0]
                 if abs(robot_orientation[3]) < 0.97:
