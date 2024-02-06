@@ -1,8 +1,8 @@
 import pickle
 import Simulation.env_create as env
 
-file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\robot_fail_2.pkl"
-# file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\save_network_1.pkl"
+file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\save_network_generation.pkl"
+# file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\save_network_0.pkl"
 
 # Now, you can load the instance back from the file
 with open(file_path, "rb") as file:
@@ -18,5 +18,5 @@ with open(file_path, "rb") as file:
 
 env.load_simulation(True)
 # print(env.run_simulation(loaded_network, True, 3000, False, True))
-print(env.run_simulation(loaded_network, True, 3000))
+print(env.run_simulation(loaded_network, True, 2000))
 env.unload_simulation()

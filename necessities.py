@@ -1,8 +1,10 @@
 import pickle
 
+import numpy as np
+
 from neural_network import NeuralNetwork
 
-POPULATION_SIZE = 100
+POPULATION_SIZE = 50
 NUM_OF_POPULATIONS = 5
 MAX_GENERATIONS = 5000
 MUTATION_RATE = 0.5
@@ -11,8 +13,8 @@ CROSSOVER = 3
 KEEP_CHAMPIONS = 1
 NEW_RANDOS = 2
 CHECK_PERCENTAGE = 10
-MAX_STUCK_GENERATIONS = 5
-SAVE_GENERATION = False
+MAX_STUCK_GENERATIONS = 10
+SAVE_GENERATION = True
 
 
 def initialize_population(network_size, num_of_inputs):
@@ -79,31 +81,32 @@ def train_generation(agent, population, mutation_range, mutation_rate, network_s
 
     next_generation = []
 
-    # keep the good ones
-    for i in range(int(KEEP_CHAMPIONS)):
-        next_generation.append(population[i].clone())
-
-    # add the crossovers
-    for i in range(int(CROSSOVER)):
-        next_generation.append(crossover(population[i], population[i + 1]))
-
-    # add random networks to the mix
-    for i in range(int(NEW_RANDOS)):
-        next_generation.append(NeuralNetwork(network_size, num_of_inputs))
-
-    # Mutate the kids
-    current_kid = 0
-    while len(next_generation) < POPULATION_SIZE:
-        mutated_kid = population[current_kid].clone()
+    # # keep the good ones
+    # for i in range(int(KEEP_CHAMPIONS)):
+    #     next_generation.append(population[i].clone())
+    #
+    # # add the crossovers
+    # for i in range(int(CROSSOVER)):
+    #     next_generation.append(crossover(population[i], population[i + 1]))
+    #
+    # # add random networks to the mix
+    # for i in range(int(NEW_RANDOS)):
+    #     next_generation.append(NeuralNetwork(network_size, num_of_inputs))
+    #
+    # # Mutate the kids
+    # current_kid = 0
+    # while len(next_generation) < POPULATION_SIZE:
+    #     mutated_kid = population[current_kid].clone()
+    #     mutated_kid.mutate(mutation_rate, mutation_range)
+    #     next_generation.append(mutated_kid)
+    #     current_kid += 1
+    next_generation.append(population[0].clone())
+    for _ in range(len(population) - 1):
+        mutated_kid = population[0].clone()
         mutated_kid.mutate(mutation_rate, mutation_range)
         next_generation.append(mutated_kid)
-        current_kid += 1
 
-    # print(f"size of population is: {len(population)}")
-    # get the average fitness of the top check_percentage% to see if it's time to stop training
-    average_top_fitness = sum(
-        sorted(fitness_scores, reverse=True)[:int(len(fitness_scores) * (CHECK_PERCENTAGE / 100))]) / int(
-        len(fitness_scores) * (CHECK_PERCENTAGE / 100))
+    print(f"size of population is: {len(population)}")
 
     # Print Top
     array = []
@@ -111,7 +114,7 @@ def train_generation(agent, population, mutation_range, mutation_rate, network_s
         array.append(score)
     print(array)
 
-    return next_generation, average_top_fitness
+    return next_generation, array[0]
 
 
 def train_population(agent, population, network_size, num_of_inputs, print_progress=True):
@@ -124,38 +127,28 @@ def train_population(agent, population, network_size, num_of_inputs, print_progr
     :param print_progress Boolean - prints the progress
     :return: trained_population[NeuralNetwork]
     """
-    total_array = []
-    average_fitness_array = []
-    for i in range(int(CHECK_PERCENTAGE / (100 / len(population)))):
-        average_fitness_array.append(i)
+    fitness_array = [1, 2]
     num_stuck_generations = 0
     mutation_range = MUTATION_RANGE
-    mutation_rate = MUTATION_RATE
 
     for generation in range(MAX_GENERATIONS):
         if print_progress:
             print(f"Generation {generation + 1} mutation range {mutation_range}")
 
-        population, average_fitness = train_generation(agent, population, mutation_range, mutation_rate, network_size,
-                                                       num_of_inputs)
+        population, top_fitness = train_generation(agent, population, mutation_range, MUTATION_RATE, network_size,
+                                                   num_of_inputs)
 
-        average_fitness_array.pop()
-        average_fitness_array.insert(0, average_fitness)
-        total_array.append(average_fitness)
-        if max(average_fitness_array) - min(
-                average_fitness_array) <= min(average_fitness_array) / 100000:
+        fitness_array.pop()
+        fitness_array.insert(0, top_fitness)
+        if fitness_array[0] == fitness_array[1]:
             num_stuck_generations += 1
         else:
             num_stuck_generations = 0
 
         if num_stuck_generations >= MAX_STUCK_GENERATIONS:
-            mutation_range *= 1.4
-            if mutation_range > 0.5:
-                mutation_range = 0.01
+            mutation_range = MUTATION_RANGE + np.log10(num_stuck_generations / 10)
         else:
-            mutation_range *= 0.9
-            if mutation_range < 0.05:
-                mutation_range = 0.05
+            mutation_range = MUTATION_RANGE
 
         if num_stuck_generations >= MAX_STUCK_GENERATIONS * 5:
             break

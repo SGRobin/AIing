@@ -53,35 +53,48 @@ def unload_simulation():
 def reset_joints():
     for joint in link_ids:
         p.resetJointState(robot_id, joint, 0)
+        startPos = [0, 0, 0.18]
+        startOrientation = p.getQuaternionFromEuler([0, 0, 0])
+        p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
 
 
 simulations_ran = 0.0
 total_time = 0.0
 
 
-def run_simulation(network=None, wait=False, time_to_run=3000, network_controlled=True, hard_walk=False):
+def run_simulation(network=None, wait=False, time_to_run=2000, network_controlled=True):
     global total_time, simulations_ran
     reset_joints()
-    directions = [0] * 18
-
+    reward = 0
+    distance = 0
     if network_controlled is True:
+        corrected_angles = [p.getJointState(robot_id, link_id)[0] for link_id in link_ids]
         for i in range(time_to_run):
-            angles = [p.getJointState(robot_id, link_id)[0] for link_id in link_ids]
 
-            if i % 10 == 0:
+            if i % 15 == 0:
+                angles = [p.getJointState(robot_id, link_id)[0] for link_id in link_ids]
                 moving_directions = network.predict(angles)
-                directions = [-0.02 if d < 0.4 else 0.02 if d > 0.6 else 0 for d in moving_directions]
+                directions = [(d / 2.5) - 0.2 for d in moving_directions]
+                corrected_angles = [angles[i] + directions[i] for i in range(len(angles))]
 
-                if i % 50 == 0:
-                    robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
-                    if abs(robot_orientation[3]) < 0.95:
-                        distance = -robot_position[0]
-                        p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
-                        return distance - 1
+            if i % 45 == 0:
+                robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
+                # give the reward
+                if -robot_position[0] - distance <= 0.01:
+                    reward -= 0.001
+                    # reward-= 0.002 #TODO ?
+                reward += -robot_position[0] - distance
+                if robot_position[2] <= 0.05:
+                    reward -= 0.001
+
+                distance = -robot_position[0]
+                if abs(robot_orientation[3]) < 0.97:# 0.98 #TODO ?
+                    p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
+                    return distance - 1
 
             for j, link_id in enumerate(link_ids):
                 p.setJointMotorControl2(robot_id, link_id, p.POSITION_CONTROL,
-                                        targetPosition=angles[j] + directions[j],
+                                        targetPosition=corrected_angles[j],
                                         force=constants.MOTOR_MAX_FORCE,
                                         maxVelocity=constants.MOTOR_MAX_VELOCITY)
 
@@ -96,11 +109,22 @@ def run_simulation(network=None, wait=False, time_to_run=3000, network_controlle
         for i in range(time_to_run):
             hard.step(robot_id, i)
             p.stepSimulation()
+            if i % 45 == 0:
+                robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
+                # give the reward
+                reward += -robot_position[0] - distance
+                if robot_position[2] <= 0.05:
+                    reward -= 0.01
+
+                distance = -robot_position[0]
+                if abs(robot_orientation[3]) < 0.97:
+                    p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
+                    return distance - 1
             if wait is True:
-                time.sleep(0.001)
+                time.sleep(0.004)
     # print(f"simulation_execution_time: {simulation_execution_time} seconds\n")
 
-    robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
-    distance = -robot_position[0]
-    p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
-    return distance
+    # robot_position, robot_orientation = p.getBasePositionAndOrientation(robot_id)
+    # distance = -robot_position[0]
+    # p.resetBasePositionAndOrientation(robot_id, startPos, startOrientation)
+    return reward
