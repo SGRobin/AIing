@@ -1,12 +1,18 @@
 import math
 import pickle
 import sys
+import time
 
+import numpy as np
 import pygame
+
+print("i am here")
 
 global screen
 global circle_radius
 global clock
+FRAMES_PER_PREDICTION = 4
+NUM_PREDICTIONS = 50
 
 
 def draw_window():
@@ -33,6 +39,11 @@ CONSTANT = 0.6
 FRICTION = 0.3
 GROUND_FRICTION = 0.8
 GRAVITY = 1
+
+input_time = 0
+predict_time = 0
+fire_input_time = 0
+start_overall = time.time()
 
 
 class WormSimulation:
@@ -83,10 +94,20 @@ class WormSimulation:
         """
         if show_simulation:
             draw_window()
-        for _ in range(60):
+        global input_time, predict_time, fire_input_time
+        for _ in range(NUM_PREDICTIONS):
+            start_time = time.time()
             inputs = self.get_network_inputs()
-            moving_directions = network.predict(inputs)
-            self.fire_inputs(moving_directions, 4, show_simulation)
+            input_time += time.time() - start_time
+
+            start_time = time.time()
+            moving_directions = network.predict(np.array(inputs))
+            predict_time += time.time() - start_time
+
+            start_time = time.time()
+            self.fire_inputs(moving_directions, FRAMES_PER_PREDICTION, show_simulation)
+            fire_input_time += time.time() - start_time
+
         return self.get_progress()
 
     def fire_inputs(self, inputs, physics_steps, show_simulation):
@@ -277,8 +298,8 @@ def draw_worm(current_worm):
 
 # Runs the simulation with visual to let one network walk
 if __name__ == '__main__':
-    # file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\save_network_generation.pkl"
-    file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\save_network_1.pkl"
+    file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\save_network_generation.pkl"
+    # file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\save_network_2.pkl"
 
     # Load the instance from the file
     with open(file_path, "rb") as file:

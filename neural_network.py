@@ -1,7 +1,6 @@
-import math
 import random
+
 import numpy as np
-# import cupy as np
 
 
 def sigmoid(x):
@@ -28,12 +27,13 @@ class Neuron:
         """
         if len(inputs) != len(self.weights):
             raise ValueError("input and weights sizes don't match")
-        return sigmoid(sum(inputs * self.weights) + self.bias)
-        # return math.tanh(sum(inputs * self.weights) + self.bias)
+        result = (sigmoid(sum(inputs * self.weights) + self.bias))
+        return result
 
     def mutate_neuron(self, mutation_rate, mutation_range):
         """
         mutates the Neuron
+        :param mutation_range: num
         :param mutation_rate: 0 < float < 1
         :return:
         """
@@ -102,6 +102,7 @@ class Layer:
     def mutate_layer(self, mutation_rate, mutation_range):
         """
         mutates a Layer
+        :param mutation_range: num
         :param mutation_rate: 0 < float < 1
         :return:
         """
@@ -165,6 +166,7 @@ class NeuralNetwork:
     def mutate(self, mutation_rate, mutation_range):
         """
         mutates the Network
+        :param mutation_range: num
         :param mutation_rate: 0 < float < 1
         :return:
         """

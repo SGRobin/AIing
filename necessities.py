@@ -1,10 +1,11 @@
 import pickle
+import time
 
 import numpy as np
 
 from neural_network import NeuralNetwork
 
-POPULATION_SIZE = 50
+POPULATION_SIZE = 30
 NUM_OF_POPULATIONS = 5
 MAX_GENERATIONS = 5000
 MUTATION_RATE = 0.5
@@ -62,7 +63,7 @@ def save(best_network):
         pickle.dump(best_network, file)
 
 
-def train_generation(agent, population, mutation_range, mutation_rate, network_size, num_of_inputs):
+def train_generation(agent, population, mutation_range, mutation_rate, network_size, num_of_inputs, executor):
     """
     trains one single generation by using mutation and crossovers
     :param network_size: [x, y] - size of neural network
@@ -74,37 +75,27 @@ def train_generation(agent, population, mutation_range, mutation_rate, network_s
     :return: trained_population[NeuralNetwork]
     """
     # calculate the fitness scores of the population
-    fitness_scores = [agent.evaluate_fitness(network) for network in population]
+    start_time = time.time()
+
+    # fitness_scores = [agent.evaluate_fitness(network) for network in population]
+
+    fitness_scores = list(executor.map(agent.evaluate_fitness, population))
+
+    end_time = time.time()
+    print(f"fitness time: {end_time - start_time}")
 
     # sort the population by fitness scores
     population = sorted(population, key=lambda obj: fitness_scores[population.index(obj)], reverse=True)
 
-    next_generation = []
+    next_generation = [population[0].clone()]
 
-    # # keep the good ones
-    # for i in range(int(KEEP_CHAMPIONS)):
-    #     next_generation.append(population[i].clone())
-    #
-    # # add the crossovers
-    # for i in range(int(CROSSOVER)):
-    #     next_generation.append(crossover(population[i], population[i + 1]))
-    #
-    # # add random networks to the mix
-    # for i in range(int(NEW_RANDOS)):
-    #     next_generation.append(NeuralNetwork(network_size, num_of_inputs))
-    #
-    # # Mutate the kids
-    # current_kid = 0
-    # while len(next_generation) < POPULATION_SIZE:
-    #     mutated_kid = population[current_kid].clone()
-    #     mutated_kid.mutate(mutation_rate, mutation_range)
-    #     next_generation.append(mutated_kid)
-    #     current_kid += 1
-    next_generation.append(population[0].clone())
+    start_time = time.time()
     for _ in range(len(population) - 1):
         mutated_kid = population[0].clone()
         mutated_kid.mutate(mutation_rate, mutation_range)
         next_generation.append(mutated_kid)
+    end_time = time.time()
+    print(f"mutation time: {end_time - start_time}")
 
     print(f"size of population is: {len(population)}")
 
@@ -117,9 +108,10 @@ def train_generation(agent, population, mutation_range, mutation_rate, network_s
     return next_generation, array[0]
 
 
-def train_population(agent, population, network_size, num_of_inputs, print_progress=True):
+def train_population(agent, population, network_size, num_of_inputs, executor, print_progress=True):
     """
     trains a population over "generation" generations
+    :param executor: executor used to run many processes at the same time
     :param network_size: [x, y] - size of neural network
     :param num_of_inputs: int - number of inputs in the neural network
     :param agent: agent.py - the agent we use
@@ -136,7 +128,7 @@ def train_population(agent, population, network_size, num_of_inputs, print_progr
             print(f"Generation {generation + 1} mutation range {mutation_range}")
 
         population, top_fitness = train_generation(agent, population, mutation_range, MUTATION_RATE, network_size,
-                                                   num_of_inputs)
+                                                   num_of_inputs, executor)
 
         fitness_array.pop()
         fitness_array.insert(0, top_fitness)
@@ -164,9 +156,10 @@ def train_population(agent, population, network_size, num_of_inputs, print_progr
     return population
 
 
-def train(agent, network_size, num_of_inputs, print_progress, save_progress=False):
+def train(agent, network_size, num_of_inputs, print_progress, executor, save_progress=False):
     """
     Trains "num_of_populations" populations and then merges them and trained the best of each together
+    :param executor: executor used to run many processes at the same time
     :param agent: agent.py - the agent we use
     :param network_size: [x, y] - size of neural network
     :param num_of_inputs: int - number of inputs in the neural network
@@ -181,7 +174,8 @@ def train(agent, network_size, num_of_inputs, print_progress, save_progress=Fals
             print(f"Population number {population_num + 1}:")
         population = initialize_population(network_size, num_of_inputs)
 
-        trained_population = train_population(agent, population, network_size, num_of_inputs, print_progress)
+        trained_population = train_population(agent, population, network_size, num_of_inputs, executor=executor,
+                                              print_progress=print_progress)
 
         # calculate the fitness scores of the population
         fitness_scores = [agent.evaluate_fitness(network) for network in population]

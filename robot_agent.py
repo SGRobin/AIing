@@ -6,4 +6,3 @@ def evaluate_fitness(network):
     distance = env.run_simulation(network)
     # distance = env.run_simulation(network, hard_walk=True, network_controlled=False)
     return distance
-
