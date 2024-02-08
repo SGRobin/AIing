@@ -1,8 +1,28 @@
 import Simulation.env_create as env
+from MultiprocessingSlave import multiprocessing_slave
+from constants import NUM_CORPSE
+
+simulation = None
 
 
-# Function to evaluate the fitness of each neural network
-def evaluate_fitness(network):
-    distance = env.run_simulation(network)
-    # distance = env.run_simulation(network, hard_walk=True, network_controlled=False)
-    return distance
+def initialize(show_simulation):
+    multiprocessing_slave.executor.map(create_magic_simulation, [show_simulation] * NUM_CORPSE)
+
+
+def create_magic_simulation(show_simulation):
+    global simulation
+    simulation = env.Simulation(show_simulation)
+
+
+def evaluate_fitness(networks):
+    distances = multiprocessing_slave.executor.map(run_simulation, networks)
+    return [d for d in distances]
+
+
+def run_simulation(network):
+    result = simulation.run_simulation(network)
+    return result
+
+
+def unload_simulation():
+    multiprocessing_slave.executor.map(simulation.unload_simulation, [None] * NUM_CORPSE)

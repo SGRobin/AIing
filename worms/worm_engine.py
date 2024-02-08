@@ -85,7 +85,7 @@ class WormSimulation:
             last_vertex_1 = new_vertex_1
             last_vertex_2 = new_vertex_2
 
-    def run_simulation(self, network, show_simulation):
+    def run_simulation(self, network, show_simulation=False):
         """
         runs the simulation for a set amount of frames
         :param network: NeuralNetwork
