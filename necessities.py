@@ -114,7 +114,6 @@ def train_generation(agent, population, mutation_range, mutation_rate, network_s
 def train_population(agent, population, network_size, num_of_inputs, print_progress=True):
     """
     trains a population over "generation" generations
-    :param executor: executor used to run many processes at the same time
     :param network_size: [x, y] - size of neural network
     :param num_of_inputs: int - number of inputs in the neural network
     :param agent: agent.py - the agent we use
@@ -176,7 +175,8 @@ def train(agent, network_size, num_of_inputs, print_progress, save_progress=Fals
             print(f"Population number {population_num + 1}:")
         population = initialize_population(network_size, num_of_inputs)
 
-        trained_population = train_population(agent, population, network_size, num_of_inputs, print_progress=print_progress)
+        trained_population = train_population(agent, population, network_size, num_of_inputs,
+                                              print_progress=print_progress)
 
         # calculate the fitness scores of the population
         fitness_scores = agent.evaluate_fitness(population)

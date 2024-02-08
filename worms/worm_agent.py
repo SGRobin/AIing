@@ -17,3 +17,7 @@ def evaluate_fitness(networks):
 
 def unload_simulations():
     pass
+
+
+def get_save_path():
+    return "networks/worm_network.pkl"

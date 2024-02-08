@@ -9,8 +9,8 @@ from constants import NUM_CORPSE
 from worms import worm_agent
 
 # Genetic Algorithm parameters
-agent = worm_agent
-# agent = robot_agent
+# agent = worm_agent
+agent = robot_agent
 # agent = xor_agent
 
 if agent == xor_agent:
@@ -21,7 +21,7 @@ else:
     num_of_inputs = 18
 
 print_progress = True
-show_simulation = False
+show_simulation = False # DONT CHANGE
 save_progress = True
 
 
@@ -36,21 +36,16 @@ def main():
                                          print_progress=print_progress,
                                          save_progress=save_progress)
 
+    file_path = None
     # Test the best-performing network for xor agent    file_path = None
     if agent == xor_agent:
-        predictions = []
+        predictions = [] #TODO change
         for i in range(len(xor_agent.test_inputs)):
             predictions.append(best_network.predict(xor_agent.test_inputs[i]))
         print(f"Predictions: {predictions}")
         print(xor_agent.test_outputs)
 
-        file_path = "networks/xor_network.pkl"
-
-    if agent == robot_agent:
-        file_path = "networks/robot_network.pkl"
-
-    if agent == worm_agent:
-        file_path = "networks/worm_network.pkl"
+    file_path = agent.get_save_path()
 
     # Save the instance to a file
 
@@ -58,7 +53,7 @@ def main():
         with open(file_path, "wb") as file:
             pickle.dump(best_network, file)
 
-    agent.unload_simulations()
+    # agent.unload_simulation()
 
 
 if __name__ == '__main__':

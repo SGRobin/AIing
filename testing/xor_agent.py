@@ -27,3 +27,7 @@ def initialize(show_simulation):
 
 def unload_simulations():
     pass
+
+
+def get_save_path():
+    return "networks/xor_network.pkl"

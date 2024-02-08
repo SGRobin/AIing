@@ -6,8 +6,6 @@ import time
 import numpy as np
 import pygame
 
-print("i am here")
-
 global screen
 global circle_radius
 global clock
@@ -298,7 +296,7 @@ def draw_worm(current_worm):
 
 # Runs the simulation with visual to let one network walk
 if __name__ == '__main__':
-    file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\save_network_generation.pkl"
+    file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\wormk_save_4.pkl"
     # file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\save_network_2.pkl"
 
     # Load the instance from the file

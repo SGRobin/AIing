@@ -26,3 +26,8 @@ def run_simulation(network):
 
 def unload_simulation():
     multiprocessing_slave.executor.map(simulation.unload_simulation, [None] * NUM_CORPSE)
+
+
+def get_save_path():
+    return "networks/robot_network.pkl"
+
