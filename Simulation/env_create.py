@@ -1,5 +1,6 @@
 import time
 
+import numpy as np
 import pybullet as p
 import pybullet_data
 import pybullet_utils.bullet_client as bc
@@ -57,7 +58,8 @@ class Simulation:
             for i in range(time_to_run):
 
                 if i % 15 == 0:
-                    angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids]
+                    angles = np.array([self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
+                    # print(angles)
                     moving_directions = network.predict(angles)
                     directions = [(d / 2.5) - 0.2 for d in moving_directions]
                     corrected_angles = [angles[i] + directions[i] for i in range(len(angles))]
@@ -68,7 +70,7 @@ class Simulation:
 
                     reward += -robot_position[0] - distance
                     if robot_position[2] <= 0.07:
-                        reward -= 0.003
+                        reward -= 0.01
 
                     distance = -robot_position[0]
                     if abs(robot_orientation[3]) < 0.98:
@@ -95,11 +97,13 @@ class Simulation:
                 hard.step(self.robot_id, i)
                 self.physics_client.stepSimulation()
                 if i % 45 == 0:
+                    print(reward)
                     robot_position, robot_orientation = self.physics_client.getBasePositionAndOrientation(self.robot_id)
                     # give the reward
+
                     reward += -robot_position[0] - distance
                     if robot_position[2] <= 0.07:
-                        reward -= 0.003
+                        reward -= 0.01
 
                     distance = -robot_position[0]
                     if abs(robot_orientation[3]) < 0.98:

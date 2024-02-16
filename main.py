@@ -5,30 +5,29 @@ import necessities
 import robot_agent
 import testing.xor_agent as xor_agent
 from MultiprocessingSlave import multiprocessing_slave
-from constants import NUM_CORPSE
+from constants import NUM_PROCESSES
 from worms import worm_agent
 
 # Genetic Algorithm parameters
-# agent = worm_agent
-agent = robot_agent
+agent = worm_agent
+# agent = robot_agent
 # agent = xor_agent
 
 if agent == xor_agent:
     network_size = [2, 1]
     num_of_inputs = 2
 else:
-    network_size = [32, 32, 32, 18]
+    network_size = [32, 32, 18]
     num_of_inputs = 18
 
 print_progress = True
-show_simulation = False # DONT CHANGE
 save_progress = True
 
 
 def main():
-    with concurrent.futures.ProcessPoolExecutor(max_workers=NUM_CORPSE) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=NUM_PROCESSES) as executor:
         multiprocessing_slave.executor = executor
-        agent.initialize(show_simulation)
+        agent.initialize()
 
         best_network = necessities.train(agent=agent,
                                          network_size=network_size,

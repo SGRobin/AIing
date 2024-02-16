@@ -5,7 +5,7 @@ from MultiprocessingSlave import multiprocessing_slave
 from worms.worm_engine import WormSimulation
 
 
-def initialize(show_simulation):
+def initialize():
     pass
 
 

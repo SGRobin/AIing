@@ -1,15 +1,13 @@
 import pickle
 import time
 
-import numpy as np
-
 from neural_network import NeuralNetwork
 
-POPULATION_SIZE = 40
-NUM_OF_POPULATIONS = 1
+POPULATION_SIZE = 100
+NUM_OF_POPULATIONS = 4
 MAX_GENERATIONS = 5000
-MUTATION_RATE = 0.5
-MUTATION_RANGE = 0.5
+MUTATION_RATE = 0.15
+MUTATION_RANGE = 1
 CROSSOVER = 3
 KEEP_CHAMPIONS = 1
 NEW_RANDOS = 2
@@ -139,10 +137,10 @@ def train_population(agent, population, network_size, num_of_inputs, print_progr
         else:
             num_stuck_generations = 0
 
-        if num_stuck_generations >= MAX_STUCK_GENERATIONS:
-            mutation_range = MUTATION_RANGE + np.log10(num_stuck_generations / 10)
-        else:
-            mutation_range = MUTATION_RANGE
+        # if num_stuck_generations >= MAX_STUCK_GENERATIONS: #TODO check if it helps
+        #     mutation_range = MUTATION_RANGE + np.log10(num_stuck_generations / 10)
+        # else:
+        #     mutation_range = MUTATION_RANGE
 
         if num_stuck_generations >= MAX_STUCK_GENERATIONS * 5:
             break

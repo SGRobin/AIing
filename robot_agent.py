@@ -1,12 +1,12 @@
 import Simulation.env_create as env
 from MultiprocessingSlave import multiprocessing_slave
-from constants import NUM_CORPSE
+from constants import NUM_PROCESSES
 
 simulation = None
 
 
-def initialize(show_simulation):
-    multiprocessing_slave.executor.map(create_magic_simulation, [show_simulation] * NUM_CORPSE)
+def initialize():
+    multiprocessing_slave.executor.map(create_magic_simulation, [False] * NUM_PROCESSES)
 
 
 def create_magic_simulation(show_simulation):
@@ -25,7 +25,7 @@ def run_simulation(network):
 
 
 def unload_simulation():
-    multiprocessing_slave.executor.map(simulation.unload_simulation, [None] * NUM_CORPSE)
+    multiprocessing_slave.executor.map(simulation.unload_simulation, [None] * NUM_PROCESSES)
 
 
 def get_save_path():

@@ -21,7 +21,7 @@ def evaluate_single_network(network):
     return 1 / (1 + error)
 
 
-def initialize(show_simulation):
+def initialize():
     pass
 
 
