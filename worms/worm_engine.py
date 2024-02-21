@@ -44,6 +44,11 @@ fire_input_time = 0
 start_overall = time.time()
 
 
+def create_and_run_simulation(network):
+    worm = WormSimulation()
+    return worm.run_simulation(network)
+
+
 class WormSimulation:
     """
     Represents the worm
@@ -296,8 +301,8 @@ def draw_worm(current_worm):
 
 # Runs the simulation with visual to let one network walk
 if __name__ == '__main__':
-    file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\save_network_generation.pkl"
-    # file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\save_network_0.pkl"
+    # file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\networks\\save_network_generation.pkl"
+    file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\save_network_1.pkl"
 
     # Load the instance from the file
     with open(file_path, "rb") as file:

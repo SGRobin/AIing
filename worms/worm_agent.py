@@ -2,7 +2,7 @@
 
 # Function to evaluate the fitness of each neural network
 from MultiprocessingSlave import multiprocessing_slave
-from worms.worm_engine import WormSimulation
+from worms.worm_engine import create_and_run_simulation
 
 
 def initialize():
@@ -10,8 +10,7 @@ def initialize():
 
 
 def evaluate_fitness(networks):
-    worm = WormSimulation()
-    distances = multiprocessing_slave.executor.map(worm.run_simulation, networks)
+    distances = multiprocessing_slave.executor.map(create_and_run_simulation, networks)
     return [d for d in distances]
 
 

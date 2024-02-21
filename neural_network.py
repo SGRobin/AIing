@@ -144,7 +144,7 @@ class NeuralNetwork:
     the initiator gets the size of all the layers [input size, hidden size, hidden size, output size]
     """
 
-    def __init__(self, layer_sizes, num_of_inputs):
+    def __init__(self, layer_sizes, num_of_inputs, mutation_rate, mutation_range):
         # Create the Layers
         self.layers = [Layer(layer_sizes[0], num_of_inputs)]
         for i in range(1, len(layer_sizes)):
@@ -152,6 +152,10 @@ class NeuralNetwork:
 
         self.layer_sizes = layer_sizes
         self.num_of_inputs = num_of_inputs
+        self.fitness_history = []
+        self.generations_stuck = 0
+        self.mutation_range = mutation_range
+        self.mutation_rate = mutation_rate
 
     def predict(self, inputs):
         """
@@ -178,7 +182,8 @@ class NeuralNetwork:
         clones the Network
         :return: NeuralNetwork
         """
-        cloned_network = NeuralNetwork(self.layer_sizes, self.num_of_inputs)
+        cloned_network = NeuralNetwork(self.get_layer_sizes(), self.get_num_inputs(), self.get_mutation_rate(),
+                                       self.get_mutation_range())
         for i in range(len(self.layers)):
             cloned_network.set_layer(i, self.get_layer_weights(i), self.get_layer_biases(i))
 
@@ -203,6 +208,13 @@ class NeuralNetwork:
         """
         return len(self.layers)
 
+    def get_num_inputs(self):
+        """
+        returns number of inputs
+        :return: int
+        """
+        return self.num_of_inputs
+
     def get_layer_weights(self, layer_index):
         """
         gets the weights of all the neurons in a layer
@@ -223,6 +235,18 @@ class NeuralNetwork:
         :return: int array. example: [2, 5, 5, 1]
         """
         return self.layer_sizes
+
+    def get_mutation_rate(self):
+        """
+        :return: float - mutation rate
+        """
+        return self.mutation_rate
+
+    def get_mutation_range(self):
+        """
+        :return: float - mutation range
+        """
+        return self.mutation_range
 
     def print_network_outputs(self, inputs):
         """

@@ -1,9 +1,9 @@
 import pickle
-import time
+import random
 
 from neural_network import NeuralNetwork
 
-POPULATION_SIZE = 100
+POPULATION_SIZE = 50
 NUM_OF_POPULATIONS = 4
 MAX_GENERATIONS = 5000
 MUTATION_RATE = 0.15
@@ -25,7 +25,7 @@ def initialize_population(network_size, num_of_inputs):
     """
     population = []
     for _ in range(POPULATION_SIZE):
-        model = NeuralNetwork(network_size, num_of_inputs)
+        model = NeuralNetwork(network_size, num_of_inputs, MUTATION_RATE, MUTATION_RANGE)
         population.append(model)
     return population
 
@@ -40,7 +40,7 @@ def crossover(network_1: NeuralNetwork, network_2: NeuralNetwork):
     if network_1.get_layer_sizes() != network_2.get_layer_sizes():
         raise ValueError("network not the same size")
     # Calculate the midpoint index
-    midpoint = network_2.get_num_layers() // 2
+    midpoint = random.randint(1, len(network_1.get_layer_sizes()) - 1)
 
     crossed_network = network_2.clone()
     for i in range(midpoint):
@@ -49,13 +49,13 @@ def crossover(network_1: NeuralNetwork, network_2: NeuralNetwork):
     return crossed_network
 
 
-def save(best_network):
+def save(best_network, path):
     """
     saves the network it gets as a class
     :param best_network: NeuralNetwork
     :return: Nothing
     """
-    file_path = f"networks/save_network_generation.pkl"
+    file_path = path
 
     with open(file_path, "wb") as file:
         pickle.dump(best_network, file)
@@ -73,7 +73,6 @@ def train_generation(agent, population, mutation_range, mutation_rate, network_s
     :return: trained_population[NeuralNetwork]
     """
     # calculate the fitness scores of the population
-    start_time = time.time()
 
     fitness_scores = agent.evaluate_fitness(population)
 
@@ -82,21 +81,20 @@ def train_generation(agent, population, mutation_range, mutation_rate, network_s
     # for i in range(len(population)):
     #     fitness_scores += list(executor.map(agent.evaluate_fitness, population[12*i::12+12*i]))
 
-    end_time = time.time()
-    print(f"fitness time: {end_time - start_time}")
-
     # sort the population by fitness scores
     population = sorted(population, key=lambda obj: fitness_scores[population.index(obj)], reverse=True)
 
     next_generation = [population[0].clone()]
 
-    start_time = time.time()
+    # for _ in range(len(population) - 1):
+    #     mutated_kid = population[0].clone()
+    #     mutated_kid.mutate(mutation_rate, mutation_range)
+    #     next_generation.append(mutated_kid)
+
     for _ in range(len(population) - 1):
-        mutated_kid = population[0].clone()
-        mutated_kid.mutate(mutation_rate, mutation_range)
-        next_generation.append(mutated_kid)
-    end_time = time.time()
-    print(f"mutation time: {end_time - start_time}")
+        child = crossover(population[random.randint(0, 20)], population[0])
+        child.mutate(mutation_rate, mutation_range)
+        next_generation.append(child)
 
     # print(f"size of population is: {len(population)}")
 
@@ -147,7 +145,7 @@ def train_population(agent, population, network_size, num_of_inputs, print_progr
 
         # Save it:
         if SAVE_GENERATION:
-            save(population[0])
+            save(population[0], f"networks/save_network_generation.pkl")
 
     # # Show Graph:
     # time_steps = np.arrange(1, len(total_array) + 1)
@@ -173,8 +171,7 @@ def train(agent, network_size, num_of_inputs, print_progress, save_progress=Fals
             print(f"Population number {population_num + 1}:")
         population = initialize_population(network_size, num_of_inputs)
 
-        trained_population = train_population(agent, population, network_size, num_of_inputs,
-                                              print_progress=print_progress)
+        population = train_population(agent, population, network_size, num_of_inputs, print_progress=print_progress)
 
         # calculate the fitness scores of the population
         fitness_scores = agent.evaluate_fitness(population)
@@ -183,14 +180,10 @@ def train(agent, network_size, num_of_inputs, print_progress, save_progress=Fals
         population = sorted(population, key=lambda obj: fitness_scores[population.index(obj)], reverse=True)
 
         for i in range(int(POPULATION_SIZE / NUM_OF_POPULATIONS)):
-            best_networks.append(trained_population[i])
+            best_networks.append(population[i])
 
         if save_progress:
-            file_path = f"save_network_{population_num}.pkl"
-            print(file_path)
-            best_network = population[0]
-            with open(file_path, "wb") as file:
-                pickle.dump(best_network, file)
+            save(population[0], f"save_network_{population_num}.pkl")
 
     trained_best_networks = train_population(agent, best_networks, network_size, num_of_inputs, print_progress)
     # Get the best-performing network
