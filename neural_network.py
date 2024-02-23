@@ -33,8 +33,8 @@ class Neuron:
     def mutate_neuron(self, mutation_rate, mutation_range):
         """
         mutates the Neuron
-        :param mutation_range: num
-        :param mutation_rate: 0 < float < 1
+        :param mutation_rate: num
+        :param mutation_range: 0 < float < 1
         :return:
         """
 
@@ -144,16 +144,20 @@ class NeuralNetwork:
     the initiator gets the size of all the layers [input size, hidden size, hidden size, output size]
     """
 
-    def __init__(self, layer_sizes, num_of_inputs, mutation_rate, mutation_range):
+    def __init__(self, layer_sizes, num_of_inputs, mutation_rate, mutation_range, fitness_history=None,
+                 generations_stuck=0):
         # Create the Layers
         self.layers = [Layer(layer_sizes[0], num_of_inputs)]
         for i in range(1, len(layer_sizes)):
             self.layers.append(Layer(layer_sizes[i], layer_sizes[i - 1]))
 
+        if fitness_history is not None:
+            self.fitness_history = fitness_history
+        else:
+            self.fitness_history = [0]
         self.layer_sizes = layer_sizes
         self.num_of_inputs = num_of_inputs
-        self.fitness_history = []
-        self.generations_stuck = 0
+        self.generations_stuck = generations_stuck
         self.mutation_range = mutation_range
         self.mutation_rate = mutation_rate
 
@@ -167,23 +171,21 @@ class NeuralNetwork:
             inputs = np.array([neuron.fire(inputs) for neuron in layer.neurons])
         return inputs
 
-    def mutate(self, mutation_rate, mutation_range):
+    def mutate(self):
         """
         mutates the Network
-        :param mutation_range: num
-        :param mutation_rate: 0 < float < 1
         :return:
         """
         for layer in self.layers:
-            layer.mutate_layer(mutation_rate, mutation_range)
+            layer.mutate_layer(self.mutation_rate, self.mutation_range)
 
     def clone(self):
         """
         clones the Network
         :return: NeuralNetwork
         """
-        cloned_network = NeuralNetwork(self.get_layer_sizes(), self.get_num_inputs(), self.get_mutation_rate(),
-                                       self.get_mutation_range())
+        cloned_network = NeuralNetwork(self.get_layer_sizes(), self.get_num_inputs(), self.mutation_rate,
+                                       self.mutation_range, self.get_fitness_history(), self.generations_stuck)
         for i in range(len(self.layers)):
             cloned_network.set_layer(i, self.get_layer_weights(i), self.get_layer_biases(i))
 
@@ -220,14 +222,14 @@ class NeuralNetwork:
         gets the weights of all the neurons in a layer
         :return: np.array() of np.arrays() of weights,
         """
-        return self.layers[layer_index].get_neuron_weights()
+        return [weight for weight in self.layers[layer_index].get_neuron_weights()]
 
     def get_layer_biases(self, layer_index):
         """
         gets the biases of all the neurons in a layer
         :return: np.array() of biases
         """
-        return self.layers[layer_index].get_neuron_biases()
+        return [bias for bias in self.layers[layer_index].get_neuron_biases()]
 
     def get_layer_sizes(self):
         """
@@ -236,17 +238,12 @@ class NeuralNetwork:
         """
         return self.layer_sizes
 
-    def get_mutation_rate(self):
+    def get_fitness_history(self):
         """
-        :return: float - mutation rate
+        returns the fitness history
+        :return: array[float]
         """
-        return self.mutation_rate
-
-    def get_mutation_range(self):
-        """
-        :return: float - mutation range
-        """
-        return self.mutation_range
+        return [fitness for fitness in self.fitness_history]
 
     def print_network_outputs(self, inputs):
         """

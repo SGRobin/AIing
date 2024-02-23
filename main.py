@@ -2,7 +2,6 @@ import concurrent.futures
 import pickle
 
 import necessities
-import robot_agent
 import testing.xor_agent as xor_agent
 from MultiprocessingSlave import multiprocessing_slave
 from constants import NUM_PROCESSES
@@ -35,10 +34,9 @@ def main():
                                          print_progress=print_progress,
                                          save_progress=save_progress)
 
-    file_path = None
     # Test the best-performing network for xor agent    file_path = None
     if agent == xor_agent:
-        predictions = [] #TODO change
+        predictions = []  # TODO change
         for i in range(len(xor_agent.test_inputs)):
             predictions.append(best_network.predict(xor_agent.test_inputs[i]))
         print(f"Predictions: {predictions}")
