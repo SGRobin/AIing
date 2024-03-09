@@ -1,0 +1,2 @@
+value: 649.704347949617.
+parameters: {'mutation_rate': 0.39037021242130243, 'mutation_range': 3.4268219310176002, 'stuck_generations_to_decrease': 11, 'stuck_decreases_to_increase': 5}
