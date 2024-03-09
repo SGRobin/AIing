@@ -1,41 +1,87 @@
-import concurrent.futures
-import multiprocessing
+# """
+# 2-input XOR example -- this is most likely the simplest possible example.
+# """
+#
+# import os
+#
+# import neat
+# import visualize
+#
+# # 2-input XOR inputs and expected outputs.
+# xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
+# xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
+#
+#
+# def eval_genomes(genomes, config):
+#     for genome_id, genome in genomes:
+#         genome.fitness = 4.0
+#         net = neat.nn.FeedForwardNetwork.create(genome, config)
+#         for xi, xo in zip(xor_inputs, xor_outputs):
+#             output = net.activate(xi)
+#             genome.fitness -= (output[0] - xo[0]) ** 2
+#
+#
+# def run(config_file):
+#     # Load configuration.
+#     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+#                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
+#                          config_file)
+#
+#     # Create the population, which is the top-level object for a NEAT run.
+#     p = neat.Population(config)
+#
+#     # Add a stdout reporter to show progress in the terminal.
+#     p.add_reporter(neat.StdOutReporter(True))
+#     stats = neat.StatisticsReporter()
+#     p.add_reporter(stats)
+#     p.add_reporter(neat.Checkpointer(5))
+#
+#     # Run for up to 300 generations.
+#     winner = p.run(eval_genomes, 300)
+#
+#     # Display the winning genome.
+#     print('\nBest genome:\n{!s}'.format(winner))
+#
+#     # Show output of the most fit genome against training data.
+#     print('\nOutput:')
+#     winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
+#     for xi, xo in zip(xor_inputs, xor_outputs):
+#         output = winner_net.activate(xi)
+#         print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
+#
+#     node_names = {-1: 'A', -2: 'B', 0: 'A XOR B'}
+#     visualize.draw_net(config, winner, True, node_names=node_names)
+#     visualize.draw_net(config, winner, True, node_names=node_names, prune_unused=True)
+#     visualize.plot_stats(stats, ylog=False, view=True)
+#     visualize.plot_species(stats, view=True)
+#
+#     p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
+#     p.run(eval_genomes, 10)
+#
+#
+# if __name__ == '__main__':
+#     # Determine path to configuration file. This path manipulation is
+#     # here so that the script will run successfully regardless of the
+#     # current working directory.
+#     local_dir = os.path.dirname(__file__)
+#     config_path = os.path.join(local_dir, 'config-feedforward')
+#     run(config_path)
 
-def my_func(args):
-    process_id, data = args
-    # Your function logic here
-    print(f"yay, my ID is: {process_id}")
-    result = f"Process ID: {process_id}, Data: {data}"
-    return result
+import numpy as np
 
-def worker_initializer(process_id_list):
-    global PROCESS_ID_LIST
-    PROCESS_ID_LIST = process_id_list
+def scale_array(arr, new_min=-4, new_max=4):
+    # Original range
+    old_min = min(arr)
+    old_max = max(arr)
 
-def main():
-    max_workers = 12
-    population_size = 100
-    population = [1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5,1, 2, 3, 4, 5]  # Your data goes here
+    # Scale each element in the array to the new range
+    scaled_array = ((arr - min(arr)) / (max(arr) - min(arr))) * (4 + 4) - 4
 
-    # Generate process IDs
-    process_ids = list(range(max_workers))
+    return scaled_array
 
-    # Create a shared variable for process IDs
-    with multiprocessing.Manager() as manager:
-        process_id_list = manager.list(process_ids)
+# Example usage:
+original_array = np.array([-2, 0.3, 0.8, 1])
+scaled_array = scale_array(original_array)
 
-        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers, initializer=worker_initializer, initargs=(process_id_list,)) as executor:
-            # Create population within the executor.map function
-            results = list(executor.map(my_func,
-                                        (
-                                            (process_id, data) for process_id, data in zip(process_id_list * (population_size // max_workers + 1), population)
-                                        )
-                                        )
-                           )
-
-    # print(results)
-
-if __name__ == "__main__":
-    main()
-
-
+print("Original Array:", original_array)
+print("Scaled Array:", scaled_array)

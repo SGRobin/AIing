@@ -2,24 +2,51 @@ import pickle
 import random
 
 from neural_network import NeuralNetwork
+from worms import worm_agent
 
-POPULATION_SIZE = 1
+AGENT = worm_agent
+
+POPULATION_SIZE = 11
 NUM_OF_POPULATIONS = 4
-MAX_GENERATIONS = 5000
+MAX_GENERATIONS = 2000
 
-STARTING_MUTATION_RATE = 0.1
-STARTING_MUTATION_RANGE = 1
+MUTATION_RATE = 0.05
+STARTING_MUTATION_RANGE = 3.6
 MUTATION_RANGE_DOWNWARDS_MULTIPLIER = 0.95
 STUCK_GENERATIONS_TO_DECREASE = 10
 MUTATION_RANGE_UPWARDS_MULTIPLIER = 1.01
-STUCK_DECREASES_TO_INCREASE = 40
+STUCK_GENERATIONS_TO_INCREASE = 100
 
-# CROSSOVER = 3
-# KEEP_CHAMPIONS = 1
-# NEW_RANDOS = 2
-CHECK_PERCENTAGE = 10
-MAX_STUCK_GENERATIONS = 10
 SAVE_GENERATION = False
+PRINT_PROGRESS = True
+
+
+def parameter_optimization(trial):
+    global MUTATION_RATE
+    global STARTING_MUTATION_RANGE
+    global MUTATION_RANGE_DOWNWARDS_MULTIPLIER
+    global STUCK_GENERATIONS_TO_DECREASE
+    global MUTATION_RANGE_UPWARDS_MULTIPLIER
+    global STUCK_GENERATIONS_TO_INCREASE
+    network_size = [trial.suggest_int('layer 1', 32, 64),
+                    trial.suggest_int('layer 2', 32, 64),
+                    trial.suggest_int('layer 3', 32, 64),
+                    trial.suggest_int('layer 4', 32, 64),
+                    18]
+
+    MUTATION_RATE = trial.suggest_float('mutation_rate', 0.01, 0.5)
+    STARTING_MUTATION_RANGE = trial.suggest_float('mutation_range', 1, 6)
+    population = initialize_population(network_size, 18)
+
+    MUTATION_RANGE_DOWNWARDS_MULTIPLIER = trial.suggest_float('mutation_range_downwards_multiplier', 0.9, 1)
+    STUCK_GENERATIONS_TO_DECREASE = trial.suggest_int('stuck_generations_to_decrease', 5, 15)
+    MUTATION_RANGE_UPWARDS_MULTIPLIER = trial.suggest_float('mutation_range_upwards_multiplier', 1, 1.1)
+    STUCK_GENERATIONS_TO_INCREASE = trial.suggest_int('stuck_generations_to_increase', 50, 200)
+
+    population = train_population(population)
+
+    average_fitness = (sum(population[i].fitness_history[0] for i in range(len(population))) / len(population))
+    return average_fitness
 
 
 def initialize_population(network_size, num_of_inputs):
@@ -31,7 +58,7 @@ def initialize_population(network_size, num_of_inputs):
     """
     population = []
     for _ in range(POPULATION_SIZE):
-        model = NeuralNetwork(network_size, num_of_inputs, STARTING_MUTATION_RATE, STARTING_MUTATION_RANGE)
+        model = NeuralNetwork(network_size, num_of_inputs, MUTATION_RATE, STARTING_MUTATION_RANGE)
         population.append(model)
     return population
 
@@ -55,23 +82,22 @@ def crossover(network_1: NeuralNetwork, network_2: NeuralNetwork):
     return crossed_network
 
 
-def save(best_network, path):
+def save(network, path):
     """
     saves the network it gets as a class
     :param path: str "C:something\\another_thing\\"
-    :param best_network: NeuralNetwork
+    :param network: NeuralNetwork
     :return: Nothing
     """
     file_path = path
 
     with open(file_path, "wb") as file:
-        pickle.dump(best_network, file)
+        pickle.dump(network, file)
 
 
-def train_generation(agent, population):
+def train_generation(population):
     """
     trains one single generation by using mutation and crossovers
-    :param agent: agent.py - the agent we use
     :param population: population[NeuralNetwork] - the population that is being trained
     :return: trained_population[NeuralNetwork]
     """
@@ -88,7 +114,7 @@ def train_generation(agent, population):
         next_generation.append(mutating_kid)
 
     # Calculate the fitness scores of the population:
-    fitness_scores = agent.evaluate_fitness(next_generation)
+    fitness_scores = AGENT.evaluate_fitness(next_generation)
 
     # Replace the ones that the mutation upgraded them:
     for i in range(POPULATION_SIZE):
@@ -96,56 +122,49 @@ def train_generation(agent, population):
         # Add correct fitness
         if fitness_scores[i] > population[i].fitness_history[0]:
             # print(f"new: {fitness_scores[i]}, old: {population[i].fitness_history[0]}")
-            next_generation[i].fitness_history.insert(0, fitness_scores[i])  # add fitness
+            next_generation[i].fitness_history[0] = fitness_scores[i]  # add fitness
             next_generation[i].generations_stuck = 0
         else:
+            next_generation[i] = population[i].clone()
             next_generation[i].generations_stuck += 1
 
             # Change the mutation range if stuck
             num_stuck = next_generation[i].generations_stuck
-            if num_stuck >= (STUCK_GENERATIONS_TO_DECREASE * STUCK_DECREASES_TO_INCREASE) and\
-                    next_generation[i].mutation_range < STARTING_MUTATION_RANGE:
+
+            if num_stuck >= STUCK_GENERATIONS_TO_INCREASE and \
+                    next_generation[i].mutation_range <= STARTING_MUTATION_RANGE:
                 next_generation[i].mutation_range *= MUTATION_RANGE_UPWARDS_MULTIPLIER
-            elif num_stuck % STUCK_GENERATIONS_TO_DECREASE == 0:
+            elif num_stuck % STUCK_GENERATIONS_TO_DECREASE == 0 and num_stuck <= STUCK_GENERATIONS_TO_INCREASE:
                 next_generation[i].mutation_range *= MUTATION_RANGE_DOWNWARDS_MULTIPLIER
+
+    # print(fitness_scores)
+    # fitness_scores_1 = AGENT.evaluate_fitness(next_generation)
+    # print(fitness_scores_1)
+    # for i in range(len(fitness_scores)):
+    #     if fitness_scores_1[i] < fitness_scores[i]:
+    #         print("ERROR ERROR ERROR\nERROR\nERROR\nERROR\nERROR\nERROR\nERROR\nERROR")
+    #
 
     print(
         [
             f"fitness: {next_generation[i].fitness_history[0]}, " +
             f"num stuck: {next_generation[i].generations_stuck}, " +
             f"mutation range: {next_generation[i].mutation_range}" for i in range(POPULATION_SIZE)])
-
+    # f"fitness: {next_generation[i].fitness_history[0]}, " for i in range(POPULATION_SIZE)])
     return next_generation
 
 
-def train_population(agent, population, print_progress=True):
+def train_population(population):
     """
     trains a population over "generation" generations
-    :param agent: agent.py - the agent we use
     :param population: population[NeuralNetwork] - the population that is being trained
-    :param print_progress Boolean - prints the progress
     :return: trained_population[NeuralNetwork]
     """
     for generation in range(MAX_GENERATIONS):
-        if print_progress:
+        if PRINT_PROGRESS:
             print(f"Generation {generation + 1}:")
 
-        population = train_generation(agent, population)
-
-        # fitness_array.pop()
-        # fitness_array.insert(0, population[0])
-        # if fitness_array[0] == fitness_array[1]:
-        #     num_stuck_generations += 1
-        # else:
-        #     num_stuck_generations = 0
-
-        # if num_stuck_generations >= MAX_STUCK_GENERATIONS: #TODO check if it helps
-        #     STARTING_MUTATION_RANGE = STARTING_MUTATION_RANGE + np.log10(num_stuck_generations / 10)
-        # else:
-        #     STARTING_MUTATION_RANGE = STARTING_MUTATION_RANGE
-
-        # if num_stuck_generations >= MAX_STUCK_GENERATIONS * 5:
-        #     break
+        population = train_generation(population)
 
         # Save it:
         if SAVE_GENERATION:
@@ -158,27 +177,28 @@ def train_population(agent, population, print_progress=True):
     return population
 
 
-def train(agent, network_size, num_of_inputs, print_progress, save_progress=False):
+def train(agent, network_size, num_of_inputs):
     """
     Trains "num_of_populations" populations and then merges them and trained the best of each together
     :param agent: agent.py - the agent we use
     :param network_size: [x, y] - size of neural network
     :param num_of_inputs: int - number of inputs in the neural network
-    :param print_progress Boolean - prints the progress
-    :param save_progress: Boolean - do you save during runs
     :return: NeuralNetwork - the best network
     """
+    global AGENT
+    AGENT = agent
+
     best_networks = []
     # Training loop
     for population_num in range(NUM_OF_POPULATIONS):
-        if print_progress:
+        if PRINT_PROGRESS:
             print(f"Population number {population_num + 1}:")
         population = initialize_population(network_size, num_of_inputs)
 
-        population = train_population(agent, population, print_progress=print_progress)
+        population = train_population(population)
 
         # calculate the fitness scores of the population
-        fitness_scores = agent.evaluate_fitness(population)
+        fitness_scores = AGENT.evaluate_fitness(population)
 
         # sort the population by fitness scores
         population = sorted(population, key=lambda obj: fitness_scores[population.index(obj)], reverse=True)
@@ -186,10 +206,9 @@ def train(agent, network_size, num_of_inputs, print_progress, save_progress=Fals
         for i in range(int(POPULATION_SIZE / NUM_OF_POPULATIONS)):
             best_networks.append(population[i])
 
-        if save_progress:
-            save(population[0], f"save_network_{population_num}.pkl")
+        save(population[0], f"save_network_{population_num}.pkl")
 
-    trained_best_networks = train_population(agent, best_networks, network_size)
+    trained_best_networks = train_population(best_networks)
     # Get the best-performing network
     best_network = trained_best_networks[0]
     return best_network

@@ -58,10 +58,14 @@ class Simulation:
             for i in range(time_to_run):
 
                 if i % 15 == 0:
-                    angles = np.array([self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
-                    # print(angles)
-                    moving_directions = network.predict(angles)
-                    directions = [(d / 2.5) - 0.2 for d in moving_directions]
+                    angles = np.array(
+                        [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
+                    # Scale each element in the angles to the new range of inputs
+                    inputs = ((angles - min(angles)) / (max(angles) - min(angles))) * (4 + 4) - 4
+
+                    outputs = network.predict(inputs)
+                    # Scale each element in the outputs to the new range of directions
+                    directions = ((outputs - min(outputs)) / (max(outputs) - min(outputs))) * (0.6 + 0.6) - 0.6
                     corrected_angles = [angles[i] + directions[i] for i in range(len(angles))]
 
                 if i % 45 == 0:
