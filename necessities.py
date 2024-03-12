@@ -8,17 +8,19 @@ AGENT = worm_agent
 
 POPULATION_SIZE = 11
 NUM_OF_POPULATIONS = 4
-MAX_GENERATIONS = 2000
+MAX_GENERATIONS = 10000
 
 MUTATION_RATE = 0.05
-STARTING_MUTATION_RANGE = 3.6
+STARTING_MUTATION_RANGE = 2.1
 MUTATION_RANGE_DOWNWARDS_MULTIPLIER = 0.95
-STUCK_GENERATIONS_TO_DECREASE = 10
-MUTATION_RANGE_UPWARDS_MULTIPLIER = 1.01
-STUCK_GENERATIONS_TO_INCREASE = 100
+STUCK_GENERATIONS_TO_DECREASE = 16
+MUTATION_RANGE_UPWARDS_MULTIPLIER = 1.03
+STUCK_GENERATIONS_TO_INCREASE = 155
 
 SAVE_GENERATION = False
 PRINT_PROGRESS = True
+
+SAVE_COUNTER = 0
 
 
 def parameter_optimization(trial):
@@ -28,20 +30,16 @@ def parameter_optimization(trial):
     global STUCK_GENERATIONS_TO_DECREASE
     global MUTATION_RANGE_UPWARDS_MULTIPLIER
     global STUCK_GENERATIONS_TO_INCREASE
-    network_size = [trial.suggest_int('layer 1', 32, 64),
-                    trial.suggest_int('layer 2', 32, 64),
-                    trial.suggest_int('layer 3', 32, 64),
-                    trial.suggest_int('layer 4', 32, 64),
-                    18]
+    network_size = [55, 38, 35, 18]
 
-    MUTATION_RATE = trial.suggest_float('mutation_rate', 0.01, 0.5)
-    STARTING_MUTATION_RANGE = trial.suggest_float('mutation_range', 1, 6)
+    MUTATION_RATE = trial.suggest_float('mutation_rate', 0.04, 0.05)
+    STARTING_MUTATION_RANGE = trial.suggest_float('mutation_range', 2, 2.4)
     population = initialize_population(network_size, 18)
 
-    MUTATION_RANGE_DOWNWARDS_MULTIPLIER = trial.suggest_float('mutation_range_downwards_multiplier', 0.9, 1)
-    STUCK_GENERATIONS_TO_DECREASE = trial.suggest_int('stuck_generations_to_decrease', 5, 15)
-    MUTATION_RANGE_UPWARDS_MULTIPLIER = trial.suggest_float('mutation_range_upwards_multiplier', 1, 1.1)
-    STUCK_GENERATIONS_TO_INCREASE = trial.suggest_int('stuck_generations_to_increase', 50, 200)
+    MUTATION_RANGE_DOWNWARDS_MULTIPLIER = 0.944
+    STUCK_GENERATIONS_TO_DECREASE = trial.suggest_int('stuck_generations_to_decrease', 12, 18)
+    MUTATION_RANGE_UPWARDS_MULTIPLIER = 1.033
+    STUCK_GENERATIONS_TO_INCREASE = trial.suggest_int('stuck_generations_to_increase', 140, 200)
 
     population = train_population(population)
 
@@ -170,6 +168,9 @@ def train_population(population):
         if SAVE_GENERATION:
             save(population[0], f"networks/save_network_generation.pkl")
 
+    global SAVE_COUNTER
+    SAVE_COUNTER += 1
+    save(population[0], f"mid_run_saves/save_opti_{SAVE_COUNTER}.pkl")
     # # Show Graph:
     # time_steps = np.arrange(1, len(total_array) + 1)
     # plt.plot(time_steps, np.array(total_array))

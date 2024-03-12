@@ -53,7 +53,7 @@ class Simulation:
         reward = 0
         distance = 0
         if network_controlled is True:
-            corrected_angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in
+            new_angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in
                                 self.link_ids]
             for i in range(time_to_run):
 
@@ -61,12 +61,13 @@ class Simulation:
                     angles = np.array(
                         [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
                     # Scale each element in the angles to the new range of inputs
-                    inputs = ((angles - min(angles)) / (max(angles) - min(angles))) * (4 + 4) - 4
+                    print(angles)
+                    inputs = angles * 20 / 3
 
                     outputs = network.predict(inputs)
-                    # Scale each element in the outputs to the new range of directions
-                    directions = ((outputs - min(outputs)) / (max(outputs) - min(outputs))) * (0.6 + 0.6) - 0.6
-                    corrected_angles = [angles[i] + directions[i] for i in range(len(angles))]
+                    # print(outputs)
+                    new_angles = [(out * 1.2) - 0.6 for out in outputs]
+                    # corrected_angles = [angles[i] + directions[i] for i in range(len(angles))]
 
                 if i % 45 == 0:
                     robot_position, robot_orientation = self.physics_client.getBasePositionAndOrientation(self.robot_id)
@@ -85,7 +86,7 @@ class Simulation:
                 for j, link_id in enumerate(self.link_ids):
                     self.physics_client.setJointMotorControl2(self.robot_id, link_id,
                                                               self.physics_client.POSITION_CONTROL,
-                                                              targetPosition=corrected_angles[j],
+                                                              targetPosition=new_angles[j],
                                                               force=constants.MOTOR_MAX_FORCE,
                                                               maxVelocity=constants.MOTOR_MAX_VELOCITY)
 
@@ -101,7 +102,7 @@ class Simulation:
                 hard.step(self.robot_id, i)
                 self.physics_client.stepSimulation()
                 if i % 45 == 0:
-                    print(reward)
+                    print("reward: " + str(reward))
                     robot_position, robot_orientation = self.physics_client.getBasePositionAndOrientation(self.robot_id)
                     # give the reward
 

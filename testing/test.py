@@ -67,21 +67,12 @@
 #     config_path = os.path.join(local_dir, 'config-feedforward')
 #     run(config_path)
 
-import numpy as np
-
-def scale_array(arr, new_min=-4, new_max=4):
-    # Original range
-    old_min = min(arr)
-    old_max = max(arr)
-
-    # Scale each element in the array to the new range
-    scaled_array = ((arr - min(arr)) / (max(arr) - min(arr))) * (4 + 4) - 4
-
-    return scaled_array
-
-# Example usage:
-original_array = np.array([-2, 0.3, 0.8, 1])
-scaled_array = scale_array(original_array)
-
-print("Original Array:", original_array)
-print("Scaled Array:", scaled_array)
+for i in range (200):
+    for j in range(2000):
+        print(f"generation: {j}")
+        print(f"run: {i}")
+        print(
+            [
+                f"fitness: {i + j}, " +
+                f"num stuck: {i * j}, " +
+                f"mutation range: {i / (j +1)}" for i in range(11)])
