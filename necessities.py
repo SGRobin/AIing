@@ -6,9 +6,10 @@ from worms import worm_agent
 
 AGENT = worm_agent
 
-POPULATION_SIZE = 11
-NUM_OF_POPULATIONS = 4
-MAX_GENERATIONS = 10000
+POPULATION_SIZE = 100
+NUM_OF_POPULATIONS = 5
+MAX_GENERATIONS = 5000
+STUCK_GENERATIONS_TO_SUICIDE = 300
 
 MUTATION_RATE = 0.05
 STARTING_MUTATION_RANGE = 2.1
@@ -17,7 +18,7 @@ STUCK_GENERATIONS_TO_DECREASE = 16
 MUTATION_RANGE_UPWARDS_MULTIPLIER = 1.03
 STUCK_GENERATIONS_TO_INCREASE = 155
 
-SAVE_GENERATION = False
+SAVE_GENERATION = True
 PRINT_PROGRESS = True
 
 SAVE_COUNTER = 0
@@ -71,13 +72,29 @@ def crossover(network_1: NeuralNetwork, network_2: NeuralNetwork):
     if network_1.get_layer_sizes() != network_2.get_layer_sizes():
         raise ValueError("network not the same size")
     # Calculate the midpoint index
-    midpoint = random.randint(1, len(network_1.get_layer_sizes()) - 1)
+    midpoint = random.randint(2, len(network_1.get_layer_sizes()) - 2)
 
     crossed_network = network_2.clone()
     for i in range(midpoint):
         crossed_network.set_layer(i, network_1.get_layer_weights(i), network_1.get_layer_biases(i))
 
     return crossed_network
+
+
+def generate_outcast(population):
+    if random.random() < 0.3:
+        num1 = random.randint(0, 15)
+        num2 = num1
+        while num2 == num1:
+            num2 = random.randint(0, 15)
+        return crossover(population[num1], population[num2])
+    else:
+        extra_network = population[random.randint(0, 10)].clone()
+        extra_network.generations_stuck = 0
+        extra_network.mutation_range = STARTING_MUTATION_RANGE * 5
+        extra_network.mutate()
+        extra_network.mutation_range = STARTING_MUTATION_RANGE
+        return extra_network
 
 
 def save(network, path):
@@ -103,19 +120,36 @@ def train_generation(population):
     # sort the population by fitness scores:
     population = sorted(population, key=lambda network: network.fitness_history[0], reverse=True)
 
-    # Mutate the whole population:
+    # Mutate the whole population except the worst one:
     next_generation = []
-    for i in range(POPULATION_SIZE):
+    for i in range(POPULATION_SIZE - 1):
+
+        # Change the mutation range if stuck
+        num_stuck = population[i].generations_stuck
+        if num_stuck > STUCK_GENERATIONS_TO_SUICIDE and i > 15:
+            continue
+
+        if num_stuck >= STUCK_GENERATIONS_TO_INCREASE and \
+                population[i].mutation_range <= STARTING_MUTATION_RANGE:
+            population[i].mutation_range *= MUTATION_RANGE_UPWARDS_MULTIPLIER
+        elif num_stuck % STUCK_GENERATIONS_TO_DECREASE == 0 and num_stuck <= STUCK_GENERATIONS_TO_INCREASE:
+            population[i].mutation_range *= MUTATION_RANGE_DOWNWARDS_MULTIPLIER
+
         population[i].fitness_history.insert(0, population[i].fitness_history[0])
         mutating_kid = population[i].clone()
         mutating_kid.mutate()
         next_generation.append(mutating_kid)
 
+    # fill in the blanks
+    num_to_replace = POPULATION_SIZE - len(next_generation)
+    for i in range(num_to_replace):
+        next_generation.append(generate_outcast(population))
+
     # Calculate the fitness scores of the population:
     fitness_scores = AGENT.evaluate_fitness(next_generation)
 
     # Replace the ones that the mutation upgraded them:
-    for i in range(POPULATION_SIZE):
+    for i in range(POPULATION_SIZE - num_to_replace):
 
         # Add correct fitness
         if fitness_scores[i] > population[i].fitness_history[0]:
@@ -126,29 +160,17 @@ def train_generation(population):
             next_generation[i] = population[i].clone()
             next_generation[i].generations_stuck += 1
 
-            # Change the mutation range if stuck
-            num_stuck = next_generation[i].generations_stuck
-
-            if num_stuck >= STUCK_GENERATIONS_TO_INCREASE and \
-                    next_generation[i].mutation_range <= STARTING_MUTATION_RANGE:
-                next_generation[i].mutation_range *= MUTATION_RANGE_UPWARDS_MULTIPLIER
-            elif num_stuck % STUCK_GENERATIONS_TO_DECREASE == 0 and num_stuck <= STUCK_GENERATIONS_TO_INCREASE:
-                next_generation[i].mutation_range *= MUTATION_RANGE_DOWNWARDS_MULTIPLIER
-
-    # print(fitness_scores)
-    # fitness_scores_1 = AGENT.evaluate_fitness(next_generation)
-    # print(fitness_scores_1)
-    # for i in range(len(fitness_scores)):
-    #     if fitness_scores_1[i] < fitness_scores[i]:
-    #         print("ERROR ERROR ERROR\nERROR\nERROR\nERROR\nERROR\nERROR\nERROR\nERROR")
-    #
+    # Set the Harsh clone's fitness
+    for i in range(num_to_replace):
+        next_generation[POPULATION_SIZE - (i + 1)].fitness_history.insert(0, fitness_scores[POPULATION_SIZE - (i + 1)])
 
     print(
         [
-            f"fitness: {next_generation[i].fitness_history[0]}, " +
-            f"num stuck: {next_generation[i].generations_stuck}, " +
-            f"mutation range: {next_generation[i].mutation_range}" for i in range(POPULATION_SIZE)])
-    # f"fitness: {next_generation[i].fitness_history[0]}, " for i in range(POPULATION_SIZE)])
+            #         f"fitness: {next_generation[i].fitness_history[0]}, " +
+            #         f"num stuck: {next_generation[i].generations_stuck}, " +
+            #         f"mutation range: {next_generation[i].mutation_range}" for i in range(POPULATION_SIZE)])
+            f"fitness: {next_generation[i].fitness_history[0]}, " for i in range(POPULATION_SIZE)])
+    # print(next_generation[0].fitness_history[0])
     return next_generation
 
 
@@ -168,9 +190,6 @@ def train_population(population):
         if SAVE_GENERATION:
             save(population[0], f"networks/save_network_generation.pkl")
 
-    global SAVE_COUNTER
-    SAVE_COUNTER += 1
-    save(population[0], f"mid_run_saves/save_opti_{SAVE_COUNTER}.pkl")
     # # Show Graph:
     # time_steps = np.arrange(1, len(total_array) + 1)
     # plt.plot(time_steps, np.array(total_array))

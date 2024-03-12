@@ -61,7 +61,7 @@ class Simulation:
                     angles = np.array(
                         [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
                     # Scale each element in the angles to the new range of inputs
-                    print(angles)
+                    # print(angles)
                     inputs = angles * 20 / 3
 
                     outputs = network.predict(inputs)
