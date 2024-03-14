@@ -8,8 +8,9 @@ AGENT = worm_agent
 
 POPULATION_SIZE = 100
 NUM_OF_POPULATIONS = 5
-MAX_GENERATIONS = 5000
+MAX_GENERATIONS = 10000
 STUCK_GENERATIONS_TO_SUICIDE = 300
+STUCK_GENERATIONS_TO_MOVE_ON = 1000
 
 MUTATION_RATE = 0.05
 STARTING_MUTATION_RANGE = 2.1
@@ -185,6 +186,10 @@ def train_population(population):
             print(f"Generation {generation + 1}:")
 
         population = train_generation(population)
+
+        # exit loop:
+        if population[0].generations_stuck >= STUCK_GENERATIONS_TO_MOVE_ON:
+            return population
 
         # Save it:
         if SAVE_GENERATION:

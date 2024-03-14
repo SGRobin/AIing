@@ -48,7 +48,7 @@ class Simulation:
             self.physics_client.resetJointState(self.robot_id, joint, 0)
             self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos, self.startOrientation)
 
-    def run_simulation(self, network=None, wait=False, time_to_run=1500, network_controlled=True):
+    def run_simulation(self, network=None, wait=False, time_to_run=3000, network_controlled=True):
         self.reset_joints()
         reward = 0
         distance = 0
