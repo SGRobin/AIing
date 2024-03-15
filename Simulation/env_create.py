@@ -23,8 +23,8 @@ class Simulation:
         for link_id in self.link_ids:
             self.physics_client.changeDynamics(self.robot_id,
                                                link_id,
+                                               # linearDamping=0.1,
                                                lateralFriction=constants.LINEAR_FRICTION,
-                                               angularDamping=constants.ANGULAR_FRICTION,
                                                frictionAnchor=1)
 
         if gui:
@@ -36,7 +36,7 @@ class Simulation:
         self.physics_client.setGravity(0, 0, -9.81)
 
         self.physics_client.setRealTimeSimulation(0)
-        self.physics_client.setTimeStep(1 / 60)
+        # self.physics_client.setTimeStep(1 / 60)
 
         self.physics_client.loadURDF("plane.urdf")
 
@@ -48,13 +48,13 @@ class Simulation:
             self.physics_client.resetJointState(self.robot_id, joint, 0)
             self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos, self.startOrientation)
 
-    def run_simulation(self, network=None, wait=False, time_to_run=3000, network_controlled=True):
+    def run_simulation(self, network=None, wait=False, time_to_run=2500, network_controlled=True):
         self.reset_joints()
         reward = 0
         distance = 0
         if network_controlled is True:
             new_angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in
-                                self.link_ids]
+                          self.link_ids]
             for i in range(time_to_run):
 
                 if i % 15 == 0:

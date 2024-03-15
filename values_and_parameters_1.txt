@@ -1,0 +1,2 @@
+value: 860.876956346455.
+parameters: {'layer 1': 55, 'layer 2': 38, 'layer 3': 35, 'mutation_rate': 0.04445097039879603, 'mutation_range': 2.164207976284838, 'mutation_range_downwards_multiplier': 0.94476164320149, 'stuck_generations_to_decrease': 14, 'mutation_range_upwards_multiplier': 1.0339835046119124, 'stuck_generations_to_increase': 161}_1
