@@ -23,8 +23,9 @@ class Simulation:
         for link_id in self.link_ids:
             self.physics_client.changeDynamics(self.robot_id,
                                                link_id,
-                                               # linearDamping=0.1,
+                                               # linearDamping=10,
                                                lateralFriction=constants.LINEAR_FRICTION,
+                                               angularDamping=constants.ANGULAR_FRICTION,
                                                frictionAnchor=1)
 
         if gui:
@@ -38,7 +39,7 @@ class Simulation:
         self.physics_client.setRealTimeSimulation(0)
         # self.physics_client.setTimeStep(1 / 60)
 
-        self.physics_client.loadURDF("plane.urdf")
+        self.plane_id = self.physics_client.loadURDF("plane.urdf")
 
     def unload_simulation(self, nothing=None):
         self.physics_client.disconnect()
@@ -48,10 +49,11 @@ class Simulation:
             self.physics_client.resetJointState(self.robot_id, joint, 0)
             self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos, self.startOrientation)
 
-    def run_simulation(self, network=None, wait=False, time_to_run=2500, network_controlled=True):
+    def run_simulation(self, network=None, wait=False, time_to_run=3000, network_controlled=True):
         self.reset_joints()
         reward = 0
         distance = 0
+        collision_dict = {"4": 0, "9": 0, "14": 0, "19": 0, "24": 0, "29": 0}
         if network_controlled is True:
             new_angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in
                           self.link_ids]
@@ -71,14 +73,40 @@ class Simulation:
 
                 if i % 45 == 0:
                     robot_position, robot_orientation = self.physics_client.getBasePositionAndOrientation(self.robot_id)
-                    # give the reward
+                    orientations = self.physics_client.getEulerFromQuaternion(robot_orientation)
+                    # print(robot_orientation)
+                    # print(orientations)
 
+                    # give the reward: # TODO add punishment for not stepping on toes - HOW
                     reward += -robot_position[0] - distance
-                    if robot_position[2] <= 0.07:
+
+                    # punishment for being inclined:
+                    for orientation in orientations:
+                        reward -= abs(orientation)
+
+                    # remove reward if too low:
+                    if robot_position[2] <= 0.06:
                         reward -= 0.01
 
+                    # punishment for going sideways:
+                    collision_points = self.physics_client.getContactPoints(self.robot_id, self.plane_id)
+
+                    for point in collision_points:
+                        if point[5][1] > 0.3:
+                            reward -= 0.02
+
+                    # punishment for not using all legs
+                    collision_links = [point[3] for point in collision_points]
+                    for key in collision_dict:
+                        collision_dict[key] += 1
+                        if collision_dict[key] > 4:
+                            reward -= 0.03
+                    for link in collision_links:
+                        collision_dict[str(link)] = 0
+
+                    # stop simulation if he is tilted
                     distance = -robot_position[0]
-                    if abs(robot_orientation[3]) < 0.98:
+                    if abs(robot_orientation[3]) < 0.97:
                         self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos,
                                                                             self.startOrientation)
                         return distance - 1
@@ -102,9 +130,29 @@ class Simulation:
                 hard.step(self.robot_id, i)
                 self.physics_client.stepSimulation()
                 if i % 45 == 0:
-                    print("reward: " + str(reward))
+                    # make him step on his toes:
+                    # punishment for not stepping on toes:
+                    collision_points = self.physics_client.getContactPoints(self.robot_id, self.plane_id)
+
+                    for point in collision_points:
+                        if point[5][1] > 0.3:
+                            reward -= 0.02
+
+                    # punishment for not using all legs
+                    collision_links = [point[3] for point in collision_points]
+                    for key in collision_dict:
+                        collision_dict[key] += 1
+                        if collision_dict[key] > 4:
+                            reward -= 0.03
+                    for link in collision_links:
+                        collision_dict[str(link)] = 0
+
+                    # print("reward: " + str(reward))
                     robot_position, robot_orientation = self.physics_client.getBasePositionAndOrientation(self.robot_id)
                     # give the reward
+                    orientations = self.physics_client.getEulerFromQuaternion(robot_orientation)
+                    # print(robot_orientation)
+                    # print(orientations)
 
                     reward += -robot_position[0] - distance
                     if robot_position[2] <= 0.07:
