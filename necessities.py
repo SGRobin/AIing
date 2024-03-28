@@ -60,6 +60,10 @@ def initialize_population(network_size, num_of_inputs):
     for _ in range(POPULATION_SIZE):
         model = NeuralNetwork(network_size, num_of_inputs, MUTATION_RATE, STARTING_MUTATION_RANGE)
         population.append(model)
+
+    fitness_scores = AGENT.evaluate_fitness(population)
+    for i in range(POPULATION_SIZE):
+        population[i].fitness_history[0] = fitness_scores[i]
     return population
 
 
@@ -123,7 +127,7 @@ def train_generation(population):
 
     # Mutate the whole population except the worst one:
     next_generation = []
-    for i in range(POPULATION_SIZE - 1):
+    for i in range(POPULATION_SIZE - 4):
 
         # Change the mutation range if stuck
         num_stuck = population[i].generations_stuck
@@ -167,9 +171,6 @@ def train_generation(population):
 
     print(
         [
-            #         f"fitness: {next_generation[i].fitness_history[0]}, " +
-            #         f"num stuck: {next_generation[i].generations_stuck}, " +
-            #         f"mutation range: {next_generation[i].mutation_range}" for i in range(POPULATION_SIZE)])
             f"fitness: {next_generation[i].fitness_history[0]}, " for i in range(POPULATION_SIZE)])
     # print(next_generation[0].fitness_history[0])
     return next_generation
