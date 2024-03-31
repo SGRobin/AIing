@@ -59,42 +59,42 @@ class Simulation:
 
         # punishment for being inclined:
         for orientation in orientations:
-            punishment += abs(orientation) / 25
+            punishment += abs(orientation) / 50
 
         # remove reward if too low:
-        if robot_position[2] <= 0.06:
+        if robot_position[2] <= 0.07:
             punishment += 0.01
 
         collision_points = self.physics_client.getContactPoints(self.robot_id, self.plane_id)
-
-        # punishment for going sideways - legs:
-        for point in collision_points:
-            if point[5][1] > 0.3:
-                punishment += 0.02
+        #
+        # # punishment for going sideways - legs:
+        # for point in collision_points:
+        #     if point[5][1] > 0.3:
+        #         punishment += 0.01
 
         # punishment for going sideways:
-        punishment += abs(robot_position[1]) / 10
+        # todo: only when smart already only like that
+        # punishment += abs(robot_position[1]) / 15
 
         # punishment for not using all legs
-        collision_links = [point[3] for point in collision_points]
-        for key in self.collision_dict:
-            self.collision_dict[key] += 1
-            if self.collision_dict[key] > 5:
-                punishment += 0.01
-        for link in collision_links:
-            self.collision_dict[str(link)] = 0
+        # collision_links = [point[3] for point in collision_points]
+        # for key in self.collision_dict:
+        #     self.collision_dict[key] += 1
+        #     if self.collision_dict[key] > 6:
+        #         punishment += 0.007
+        # for link in collision_links:
+        #     self.collision_dict[str(link)] = 0
 
         # stop simulation if he is tilted
-        if abs(robot_orientation[3]) < 0.98:
-            self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos,
-                                                                self.startOrientation)
-            return - 1
-        return punishment
+        # if abs(robot_orientation[3]) < 0.98:
+        #     self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos,
+        #                                                         self.startOrientation)
+        #     return - 1
+        return punishment / 10.0
 
     def run_simulation(self, network=None, wait=False, time_to_run=3000, network_controlled=True):
         self.reset_joints()
         reward = 0
-        distance = 0
         self.collision_dict = {"4": 0, "9": 0, "14": 0, "19": 0, "24": 0, "29": 0}
         if network_controlled is True:
             new_angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in
@@ -154,4 +154,9 @@ class Simulation:
         robot_position, robot_orientation = self.physics_client.getBasePositionAndOrientation(self.robot_id)
         distance = -robot_position[0]
         reward += distance
+
+        # stop him from staying in place:
+        if distance < 0.1:
+            reward -= 0.5
+
         return reward

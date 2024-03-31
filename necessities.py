@@ -7,7 +7,7 @@ from worms import worm_agent
 AGENT = worm_agent
 
 POPULATION_SIZE = 55
-NUM_OF_POPULATIONS = 5
+NUM_OF_POPULATIONS = 1
 MAX_GENERATIONS = 10000
 STUCK_GENERATIONS_TO_SUICIDE = 300
 STUCK_GENERATIONS_TO_MOVE_ON = 1000
@@ -21,6 +21,8 @@ STUCK_GENERATIONS_TO_INCREASE = 155
 
 SAVE_GENERATION = True
 PRINT_PROGRESS = True
+USE_EXISTING_NETWORK = True
+FILE_PATH = "networks\\robot_network.pkl"
 
 SAVE_COUNTER = 0
 
@@ -57,13 +59,24 @@ def initialize_population(network_size, num_of_inputs):
     :return:
     """
     population = []
-    for _ in range(POPULATION_SIZE):
-        model = NeuralNetwork(network_size, num_of_inputs, MUTATION_RATE, STARTING_MUTATION_RANGE)
-        population.append(model)
 
-    fitness_scores = AGENT.evaluate_fitness(population)
-    for i in range(POPULATION_SIZE):
-        population[i].fitness_history[0] = fitness_scores[i]
+    if USE_EXISTING_NETWORK:
+        with open(FILE_PATH, "rb") as file:
+            loaded_network = pickle.load(file)
+        loaded_network.generations_stuck = 0
+
+        for _ in range(POPULATION_SIZE):
+            clone = loaded_network.clone()
+            population.append(clone)
+
+    else:
+        for _ in range(POPULATION_SIZE):
+            model = NeuralNetwork(network_size, num_of_inputs, MUTATION_RATE, STARTING_MUTATION_RANGE)
+            population.append(model)
+
+        fitness_scores = AGENT.evaluate_fitness(population)
+        for i in range(POPULATION_SIZE):
+            population[i].fitness_history[0] = fitness_scores[i]
     return population
 
 
