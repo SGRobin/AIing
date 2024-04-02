@@ -3,7 +3,7 @@ import Simulation.env_create as env
 
 # file_path = "..\\networks\\robot_network.pkl"
 # file_path = "..\\networks\\save_network_generation.pkl"
-file_path = "..\\save_network_0.pkl"
+file_path = "..\\save_network_1.pkl"
 
 # Now, you can load the instance back from the file
 with open(file_path, "rb") as file:
@@ -18,5 +18,5 @@ with open(file_path, "rb") as file:
 # env.unload_simulation()
 simulation = env.Simulation(True)
 # print(simulation.run_simulation(loaded_network, True, 3000, False))
-print(simulation.run_simulation(loaded_network, True, 3000))
+print(simulation.run_simulation(loaded_network, True))
 simulation.unload_simulation()

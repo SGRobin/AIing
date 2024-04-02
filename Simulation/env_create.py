@@ -59,10 +59,10 @@ class Simulation:
 
         # punishment for being inclined:
         for orientation in orientations:
-            punishment += abs(orientation) / 50
+            punishment += abs(orientation) / 40
 
         # remove reward if too low:
-        if robot_position[2] <= 0.07:
+        if robot_position[2] <= 0.06:
             punishment += 0.01
 
         collision_points = self.physics_client.getContactPoints(self.robot_id, self.plane_id)
@@ -77,22 +77,22 @@ class Simulation:
         # punishment += abs(robot_position[1]) / 15
 
         # punishment for not using all legs
-        # collision_links = [point[3] for point in collision_points]
-        # for key in self.collision_dict:
-        #     self.collision_dict[key] += 1
-        #     if self.collision_dict[key] > 6:
-        #         punishment += 0.007
-        # for link in collision_links:
-        #     self.collision_dict[str(link)] = 0
+        collision_links = [point[3] for point in collision_points]
+        for key in self.collision_dict:
+            self.collision_dict[key] += 1
+            if self.collision_dict[key] > 8:
+                punishment += 0.007
+        for link in collision_links:
+            self.collision_dict[str(link)] = 0
 
         # stop simulation if he is tilted
         # if abs(robot_orientation[3]) < 0.98:
         #     self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos,
         #                                                         self.startOrientation)
         #     return - 1
-        return punishment / 10.0
+        return punishment / 5.0
 
-    def run_simulation(self, network=None, wait=False, time_to_run=3000, network_controlled=True):
+    def run_simulation(self, network=None, wait=False, time_to_run=4000, network_controlled=True):
         self.reset_joints()
         reward = 0
         self.collision_dict = {"4": 0, "9": 0, "14": 0, "19": 0, "24": 0, "29": 0}
