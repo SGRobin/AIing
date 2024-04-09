@@ -25,7 +25,11 @@ class Simulation:
                                                link_id,
                                                # linearDamping=10,
                                                lateralFriction=constants.LINEAR_FRICTION,
-                                               angularDamping=constants.ANGULAR_FRICTION,
+                                               # angularDamping=constants.ANGULAR_FRICTION,
+                                               # spinningFriction=100,
+                                               # contactStiffness=10000,
+                                               # jointDamping=0.5,
+                                               # contactDamping=10000,
                                                frictionAnchor=1)
 
         if gui:
@@ -74,14 +78,14 @@ class Simulation:
 
         # punishment for going sideways:
         # todo: only when smart already only like that
-        # punishment += abs(robot_position[1]) / 15
+        punishment += abs(robot_position[1]) / 30
 
         # punishment for not using all legs
         collision_links = [point[3] for point in collision_points]
         for key in self.collision_dict:
             self.collision_dict[key] += 1
-            if self.collision_dict[key] > 8:
-                punishment += 0.007
+            if self.collision_dict[key] > 15:
+                punishment += 0.01
         for link in collision_links:
             self.collision_dict[str(link)] = 0
 
@@ -90,9 +94,9 @@ class Simulation:
         #     self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos,
         #                                                         self.startOrientation)
         #     return - 1
-        return punishment / 5.0
+        return punishment / 4.0
 
-    def run_simulation(self, network=None, wait=False, time_to_run=4000, network_controlled=True):
+    def run_simulation(self, network=None, wait=False, time_to_run=3000, network_controlled=True):
         self.reset_joints()
         reward = 0
         self.collision_dict = {"4": 0, "9": 0, "14": 0, "19": 0, "24": 0, "29": 0}

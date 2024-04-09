@@ -22,7 +22,7 @@ STUCK_GENERATIONS_TO_INCREASE = 155
 SAVE_GENERATION = True
 PRINT_PROGRESS = True
 USE_EXISTING_NETWORK = False
-FILE_PATH = "networks\\robot_network.pkl"
+FILE_PATH = "networks\\walk1_4_3.pkl"
 
 SAVE_COUNTER = 0
 
@@ -74,9 +74,9 @@ def initialize_population(network_size, num_of_inputs):
             model = NeuralNetwork(network_size, num_of_inputs, MUTATION_RATE, STARTING_MUTATION_RANGE)
             population.append(model)
 
-        fitness_scores = AGENT.evaluate_fitness(population)
-        for i in range(POPULATION_SIZE):
-            population[i].fitness_history[0] = fitness_scores[i]
+    fitness_scores = AGENT.evaluate_fitness(population)
+    for i in range(POPULATION_SIZE):
+        population[i].fitness_history[0] = fitness_scores[i]
     return population
 
 
