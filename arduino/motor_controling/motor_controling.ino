@@ -25,14 +25,8 @@ Servo leg_6_1; // 11
 Servo leg_6_2; // 12
 Servo leg_6_3; // 13
 
-Dictionary<int, int> offsets = Dictionary<int, int>();
+Dictionary<int, int*> offsets = Dictionary<int, int*>();
 
-// void angel_rapper(&servo, angle) {
-//   angle = angle
-//   servo.write(angle)
-
-
-// }
 
 // int potpin = 0;  // analog pin used to connect the potentiometer
 int val;    // variable to read the value from the analog pin
@@ -40,64 +34,96 @@ int val;    // variable to read the value from the analog pin
 void setup() {
   // attaching servos to GPIO pins:
   leg_1_1.attach(5);
-  // leg_1_2.attach(6);
-  // leg_1_3.attach(7);
+  leg_1_2.attach(6);
+  leg_1_3.attach(7);
 
-  // leg_2_1.attach(14);
-  // leg_2_2.attach(15);
-  // leg_2_3.attach(16);
+  leg_2_1.attach(14);
+  leg_2_2.attach(15);
+  leg_2_3.attach(16);
 
-  // leg_3_1.attach(22);
-  // leg_3_2.attach(23);
-  // leg_3_3.attach(24);
+  leg_3_1.attach(22);
+  leg_3_2.attach(23);
+  leg_3_3.attach(24);
 
-  // leg_4_1.attach(18);
-  // leg_4_2.attach(19);
-  // leg_4_3.attach(20);
+  leg_4_1.attach(18);
+  leg_4_2.attach(19);
+  leg_4_3.attach(20);
 
-  // leg_5_1.attach(1);
-  // leg_5_2.attach(2);
-  // leg_5_3.attach(3);
+  leg_5_1.attach(1);
+  leg_5_2.attach(2);
+  leg_5_3.attach(3);
 
-  // leg_6_1.attach(11);
-  // leg_6_2.attach(12);
-  // leg_6_3.attach(13);
+  leg_6_1.attach(11);
+  leg_6_2.attach(12);
+  leg_6_3.attach(13);
 
   // initialize dictionary:
-  offsets.set(&leg_1_1, 35);
+  offsets.set(&leg_1_1, new int[2] {-35, 0});
+  offsets.set(&leg_2_1, new int[2] {-43, 0});
+  offsets.set(&leg_3_1, new int[2] {-35, 0});
+  offsets.set(&leg_4_1, new int[2] {-20, 0});
+  offsets.set(&leg_5_1, new int[2] {-43, 0});
+  offsets.set(&leg_6_1, new int[2] {-35, 0});
+
+  offsets.set(&leg_1_2, new int[2] {-2, 0});
+  offsets.set(&leg_2_2, new int[2] {10, 0});
+  offsets.set(&leg_3_2, new int[2] {0, 0});
+  offsets.set(&leg_4_2, new int[2] {1, 1});
+  offsets.set(&leg_5_2, new int[2] {4, 1});
+  offsets.set(&leg_6_2, new int[2] {2, 1});
+
+  offsets.set(&leg_1_3, new int[2] {-4, 0});
+  offsets.set(&leg_2_3, new int[2] {15, 0});
+  offsets.set(&leg_3_3, new int[2] {-1, 0});
+  offsets.set(&leg_4_3, new int[2] {-40, 1});
+  offsets.set(&leg_5_3, new int[2] {4, 1});
+  offsets.set(&leg_6_3, new int[2] {3, 1});
 
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
+
 void loop() {
-  // val = 90;
-  // leg_1_1.write(val - 35);
-  // leg_2_1.write(val - 43);
-  // leg_3_1.write(val - 35);
-  // leg_4_1.write(val - 20);
-  // leg_5_1.write(val - 43);
-  // leg_6_1.write(val - 35);
 
-  // val = 120;
-  // leg_1_2.write(val);
-  // leg_2_2.write(val);
-  // leg_3_2.write(val);
-  // leg_4_2.write(180 - val);
-  // leg_5_2.write(180 - val);
-  // leg_6_2.write(180 - val);
+  val = 90;
+  angel_rapper(leg_1_1, val);
+  angel_rapper(leg_2_1, val);
+  angel_rapper(leg_3_1, val);
+  angel_rapper(leg_4_1, val);
+  angel_rapper(leg_5_1, val);
+  angel_rapper(leg_6_1, val);
 
-  // val = 80;
-  // leg_1_3.write(val);
-  // leg_2_3.write(val);
-  // leg_3_3.write(val);
-  // leg_4_3.write(180 - val);
-  // leg_5_3.write(180 - val);
-  // leg_6_3.write(180 - val);
+  val = 100;
+  angel_rapper(leg_1_2, val);
+  angel_rapper(leg_2_2, val);
+  angel_rapper(leg_3_2, val);
+  angel_rapper(leg_4_2, val);
+  angel_rapper(leg_5_2, val);
+  angel_rapper(leg_6_2, val);
 
-  digitalWrite(LED_BUILTIN, LOW);
-  if(offsets.get(&leg_1_1) == 35) {
-    digitalWrite(LED_BUILTIN, HIGH);
+  val = 80;
+  angel_rapper(leg_1_3, val);
+  angel_rapper(leg_2_3, val);
+  angel_rapper(leg_3_3, val);
+  angel_rapper(leg_4_3, val);
+  angel_rapper(leg_5_3, val);
+  angel_rapper(leg_6_3, val);
+
+  // digitalWrite(LED_BUILTIN, LOW);
+  // if(offsets.get(&leg_1_1) == 35) {
+  //   digitalWrite(LED_BUILTIN, HIGH);
+  // }
+
+  delay(150000);                       // wait for a second
+
+}
+
+void angel_rapper(Servo& servo, int angle) {
+
+  angle += offsets.get(&servo)[0];
+  if (offsets.get(&servo)[1] == 1) {
+    angle = 180 - angle;
   }
-  delay(15000);                       // wait for a second
 
+  servo.write(angle);
 }
