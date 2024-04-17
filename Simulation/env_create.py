@@ -15,7 +15,7 @@ class Simulation:
         # self.id = simulation_id
 
         self.link_ids = [2, 3, 4, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29]
-        self.URDF_file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\Simulation\\models\\crab_model.urdf.xml"
+        self.URDF_file_path = "\\models\\crab_model.urdf.xml"
         self.startPos = [0, 0, 0.18]
         self.startOrientation = self.physics_client.getQuaternionFromEuler([0, 0, 0])
 
@@ -138,7 +138,7 @@ class Simulation:
                 # end_time = time.time()
                 # simulation_execution_time += end_time - start_time
                 if wait is True:
-                    time.sleep(0.004)
+                    time.sleep(0.0002)
 
         else:
             for i in range(time_to_run):
