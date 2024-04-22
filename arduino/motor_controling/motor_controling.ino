@@ -79,7 +79,10 @@ void setup() {
   offsets.set(&leg_5_3, new int[2] {4, 1});
   offsets.set(&leg_6_3, new int[2] {3, 1});
 
-  pinMode(LED_BUILTIN, OUTPUT);
+  // communication with python:
+  Serial.begin(115200);
+  Serial.setTimeout(1);
+
 }
 
 
@@ -93,7 +96,7 @@ void loop() {
   angel_rapper(leg_5_1, val);
   angel_rapper(leg_6_1, val);
 
-  val = 100;
+  val = 150;
   angel_rapper(leg_1_2, val);
   angel_rapper(leg_2_2, val);
   angel_rapper(leg_3_2, val);
@@ -101,13 +104,24 @@ void loop() {
   angel_rapper(leg_5_2, val);
   angel_rapper(leg_6_2, val);
 
-  val = 80;
+  val = 100;
   angel_rapper(leg_1_3, val);
   angel_rapper(leg_2_3, val);
   angel_rapper(leg_3_3, val);
   angel_rapper(leg_4_3, val);
   angel_rapper(leg_5_3, val);
   angel_rapper(leg_6_3, val);
+
+  // wait for orders:
+
+  unsigned char output[18];
+  get_motor_angels(output);
+  Serial.write(output, 18);
+
+
+  while (Serial.available() < 18);
+  unsigned char input[18];
+  Serial.readBytes(input, 18);
 
   // digitalWrite(LED_BUILTIN, LOW);
   // if(offsets.get(&leg_1_1) == 35) {
@@ -119,11 +133,37 @@ void loop() {
 }
 
 void angel_rapper(Servo& servo, int angle) {
+  angle = (angle < 150) ? angle : 150;
+  angle = (angle > 30) ? angle : 30; 
 
   angle += offsets.get(&servo)[0];
   if (offsets.get(&servo)[1] == 1) {
     angle = 180 - angle;
   }
 
+
   servo.write(angle);
+}
+
+void get_motor_angels(unsigned char *arr){
+  arr[0] = (unsigned char)leg_1_1.read() - offsets.get(&leg_1_1)[0];
+  arr[1] = (unsigned char)leg_2_1.read() - offsets.get(&leg_2_1)[0];
+  arr[2] = (unsigned char)leg_3_1.read() - offsets.get(&leg_3_1)[0];
+  arr[3] = (unsigned char)leg_4_1.read() - offsets.get(&leg_4_1)[0];
+  arr[4] = (unsigned char)leg_5_1.read() - offsets.get(&leg_5_1)[0];
+  arr[5] = (unsigned char)leg_6_1.read() - offsets.get(&leg_6_1)[0];
+
+  arr[6] = (unsigned char)leg_1_2.read() - offsets.get(&leg_1_2)[0];
+  arr[7] = (unsigned char)leg_2_2.read() - offsets.get(&leg_2_2)[0];
+  arr[8] = (unsigned char)leg_3_2.read() - offsets.get(&leg_3_2)[0];
+  arr[9] = 180 - (unsigned char)leg_4_2.read() - offsets.get(&leg_4_2)[0];
+  arr[10] = 180 - (unsigned char)leg_5_2.read() - offsets.get(&leg_5_2)[0];
+  arr[11] = 180 - (unsigned char)leg_6_2.read() - offsets.get(&leg_6_2)[0];
+
+  arr[12] = (unsigned char)leg_1_3.read() - offsets.get(&leg_1_3)[0];
+  arr[13] = (unsigned char)leg_2_3.read() - offsets.get(&leg_2_3)[0];
+  arr[14] = (unsigned char)leg_3_3.read() - offsets.get(&leg_3_3)[0];
+  arr[15] = 180 - (unsigned char)leg_4_3.read() - offsets.get(&leg_4_3)[0];
+  arr[16] = 180 - (unsigned char)leg_5_3.read() - offsets.get(&leg_5_3)[0];
+  arr[17] = 180 - (unsigned char)leg_6_3.read() - offsets.get(&leg_6_3)[0];
 }

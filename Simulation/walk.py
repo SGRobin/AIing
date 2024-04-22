@@ -1,7 +1,7 @@
 import pickle
 import Simulation.env_create as env
 
-file_path = "..\\networks\\4_legged_walking.pkl"
+file_path = "..\\networks\\kinda_ok_walk_4.4.pkl"
 # file_path = "..\\networks\\save_network_generation.pkl"
 # file_path = "..\\save_network_0.pkl"
 
