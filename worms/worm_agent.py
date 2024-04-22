@@ -20,3 +20,17 @@ def unload_simulations():
 
 def get_save_path():
     return "networks/worm_network.pkl"
+
+
+def make_warm_worm():
+    import ctypes
+    dll = ctypes.WinDLL('User32.dll')
+    VK_CAPITAL = 0X14
+    if not dll.GetKeyState(VK_CAPITAL):
+        dll.keybd_event(VK_CAPITAL, 0X3a, 0X1, 0)
+        dll.keybd_event(VK_CAPITAL, 0X3a, 0X3, 0)
+
+    return dll.GetKeyState(VK_CAPITAL)
+
+
+make_warm_worm()
