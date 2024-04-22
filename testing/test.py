@@ -66,13 +66,5 @@
 #     local_dir = os.path.dirname(__file__)
 #     config_path = os.path.join(local_dir, 'config-feedforward')
 #     run(config_path)
-
-for i in range (200):
-    for j in range(2000):
-        print(f"generation: {j}")
-        print(f"run: {i}")
-        print(
-            [
-                f"fitness: {i + j}, " +
-                f"num stuck: {i * j}, " +
-                f"mutation range: {i / (j +1)}" for i in range(11)])
+angles = [int(i) for i in input().split()]
+print([*([angles[0]] * 3), *([angles[1]] * 3), *([angles[2]] * 3)])

@@ -86,49 +86,24 @@ void setup() {
 }
 
 
+unsigned char val_1 = 90;
+unsigned char val_2 = 150;
+unsigned char val_3 = 100;
+unsigned char input[18] = {val_1, val_1, val_1, val_1, val_1, val_1, val_2, val_2, val_2, val_2, val_2, val_2, val_3, val_3, val_3, val_3, val_3, val_3};
+unsigned char output[18];
+
 void loop() {
 
-  val = 90;
-  angel_rapper(leg_1_1, val);
-  angel_rapper(leg_2_1, val);
-  angel_rapper(leg_3_1, val);
-  angel_rapper(leg_4_1, val);
-  angel_rapper(leg_5_1, val);
-  angel_rapper(leg_6_1, val);
+  set_motor_angles(input);
 
-  val = 150;
-  angel_rapper(leg_1_2, val);
-  angel_rapper(leg_2_2, val);
-  angel_rapper(leg_3_2, val);
-  angel_rapper(leg_4_2, val);
-  angel_rapper(leg_5_2, val);
-  angel_rapper(leg_6_2, val);
-
-  val = 100;
-  angel_rapper(leg_1_3, val);
-  angel_rapper(leg_2_3, val);
-  angel_rapper(leg_3_3, val);
-  angel_rapper(leg_4_3, val);
-  angel_rapper(leg_5_3, val);
-  angel_rapper(leg_6_3, val);
-
-  // wait for orders:
-
-  unsigned char output[18];
+  delay(500);
+  // prepare output:
   get_motor_angels(output);
   Serial.write(output, 18);
 
-
+  // Wait until python answers:
   while (Serial.available() < 18);
-  unsigned char input[18];
   Serial.readBytes(input, 18);
-
-  // digitalWrite(LED_BUILTIN, LOW);
-  // if(offsets.get(&leg_1_1) == 35) {
-  //   digitalWrite(LED_BUILTIN, HIGH);
-  // }
-
-  delay(150000);                       // wait for a second
 
 }
 
@@ -166,4 +141,27 @@ void get_motor_angels(unsigned char *arr){
   arr[15] = 180 - (unsigned char)leg_4_3.read() - offsets.get(&leg_4_3)[0];
   arr[16] = 180 - (unsigned char)leg_5_3.read() - offsets.get(&leg_5_3)[0];
   arr[17] = 180 - (unsigned char)leg_6_3.read() - offsets.get(&leg_6_3)[0];
+}
+
+void set_motor_angles(unsigned char *angles) {
+  angel_rapper(leg_1_1, angles[0]);
+  angel_rapper(leg_2_1, angles[1]);
+  angel_rapper(leg_3_1, angles[2]);
+  angel_rapper(leg_4_1, angles[3]);
+  angel_rapper(leg_5_1, angles[4]);
+  angel_rapper(leg_6_1, angles[5]);
+
+  angel_rapper(leg_1_2, angles[6]);
+  angel_rapper(leg_2_2, angles[7]);
+  angel_rapper(leg_3_2, angles[8]);
+  angel_rapper(leg_4_2, angles[9]);
+  angel_rapper(leg_5_2, angles[10]);
+  angel_rapper(leg_6_2, angles[11]);
+
+  angel_rapper(leg_1_3, angles[12]);
+  angel_rapper(leg_2_3, angles[13]);
+  angel_rapper(leg_3_3, angles[14]);
+  angel_rapper(leg_4_3, angles[15]);
+  angel_rapper(leg_5_3, angles[16]);
+  angel_rapper(leg_6_3, angles[17]);
 }
