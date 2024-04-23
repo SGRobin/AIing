@@ -109,12 +109,16 @@ class Simulation:
                     angles = np.array(
                         [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
                     # Scale each element in the angles to the new range of inputs
-                    # print(angles)
+                    print(np.degrees(angles) + 90)
                     inputs = angles * 20 / 3
 
                     outputs = network.predict(inputs)
                     # print(outputs)
                     new_angles = [(out * 1.2) - 0.6 for out in outputs]
+                    angle_angles = np.array(angles)
+                    # print(np.degrees(angle_angles) + 90)
+                    # print(np.degrees(new_angles) + 90) # [ leg_4_1normal leg_4_2invert leg_4_3normal leg_5_1normal leg_5_2invert leg_5_3normal leg_6_1_normal leg_6_2_invert leg_6_3normal leg_3_1normal leg_3_2invert leg_3_3normal leg_2_1normal leg_2_2invert leg_2_3normal leg_1_1normal leg_1_2invert leg_1_3normal]
+                    new_angles = np.radians(np.array([90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90])-90)
                     # corrected_angles = [angles[i] + directions[i] for i in range(len(angles))]
 
                 if i % 45 == 0:
@@ -138,7 +142,7 @@ class Simulation:
                 # end_time = time.time()
                 # simulation_execution_time += end_time - start_time
                 if wait is True:
-                    time.sleep(0.0002)
+                    time.sleep(0.004)
 
         else:
             for i in range(time_to_run):

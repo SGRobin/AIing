@@ -87,8 +87,8 @@ void setup() {
 
 
 unsigned char val_1 = 90;
-unsigned char val_2 = 150;
-unsigned char val_3 = 100;
+unsigned char val_2 = 100;
+unsigned char val_3 = 70;
 unsigned char input[18] = {val_1, val_1, val_1, val_1, val_1, val_1, val_2, val_2, val_2, val_2, val_2, val_2, val_3, val_3, val_3, val_3, val_3, val_3};
 unsigned char output[18];
 

@@ -18,5 +18,5 @@ with open(file_path, "rb") as file:
 # env.unload_simulation()
 simulation = env.Simulation(True)
 # print(simulation.run_simulation(loaded_network, True, 3000, False))
-print(simulation.run_simulation(loaded_network, True))
+print(simulation.run_simulation(loaded_network, True, 30000))
 simulation.unload_simulation()
