@@ -96,7 +96,7 @@ void loop() {
 
   set_motor_angles(input);
 
-  delay(2000);
+  delay(1000);
   // prepare output:
   get_motor_angels(output);
   Serial.write(output, 18);
