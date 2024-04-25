@@ -5,7 +5,7 @@ import pybullet as p
 import pybullet_data
 import pybullet_utils.bullet_client as bc
 
-import Simulation.hard_code_walk as hard
+# import Simulation.hard_code_walk as hard
 import constants
 
 
@@ -113,8 +113,10 @@ class Simulation:
                     # print(inputs)
 
                     outputs = network.predict(inputs)
-                    print(outputs)
-                    new_angles = [(out * 1.2) - 0.6 for out in outputs]
+                    # print(outputs)
+                    new_angles = (np.array(outputs) * 1.2) - 0.6  # [(out * 1.2) - 0.6 for out in outputs]
+                    true_angles = [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90]
+                    new_angles = np.radians(np.array(true_angles) - 90)
 
                 if i % 45 == 0:
                     punishment = self.punishments()
@@ -185,11 +187,16 @@ class Simulation:
                 new_angles = [(out * 1.2) - 0.6 for out in outputs]
 
                 # arduino control:
-                angles = python_to_robot_angles(outputs)
-                arduino.write(bytearray([*([angles[0]] * 6), *([angles[1]] * 6), *([angles[2]] * 6)]))
+                # true_angles = [90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
+                # new_angles = np.radians(np.array(true_angles) - 90)
+                # angles = python_to_robot_angles(new_angles)
+                arduino.write(bytearray(python_to_robot_angles(new_angles)))
 
+                robot = []
                 for _ in range(18):
                     arduino.read()
+                    arduino.read()
+                print("ha ha bug")
 
             for j, link_id in enumerate(self.link_ids):
                 self.physics_client.setJointMotorControl2(self.robot_id, link_id,
@@ -202,15 +209,21 @@ class Simulation:
             time.sleep(0.01)
 
 
-def python_to_robot_angles(outputs):
+def python_to_robot_angles(angles):
     # print(outputs)
-    angles = np.degrees((np.array(outputs) * 1.2) - 0.6) + 90
+    angles = np.degrees(angles) + 90
     leg_1 = [angles[15], 180 - angles[16], angles[17]]
     leg_2 = [angles[12], 180 - angles[13], angles[14]]
     leg_3 = [angles[9], 180 - angles[10], angles[11]]
     leg_4 = [angles[0], 180 - angles[1], angles[2]]
     leg_5 = [angles[3], 180 - angles[4], angles[5]]
     leg_6 = [angles[6], 180 - angles[7], angles[8]]
+    # leg_1 = [angles[15], angles[16], angles[17]]
+    # leg_2 = [angles[12], angles[13], angles[14]]
+    # leg_3 = [angles[9], angles[10], angles[11]]
+    # leg_4 = [angles[0], angles[1], angles[2]]
+    # leg_5 = [angles[3], angles[4], angles[5]]
+    # leg_6 = [angles[6], angles[7], angles[8]]
     robot_angles = [leg_1[0], leg_2[0], leg_3[0], leg_4[0], leg_5[0], leg_6[0],
                     leg_1[1], leg_2[1], leg_3[1], leg_4[1], leg_5[1], leg_6[1],
                     leg_1[2], leg_2[2], leg_3[2], leg_4[2], leg_5[2], leg_6[2]]

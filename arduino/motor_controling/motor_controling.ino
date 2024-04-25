@@ -65,19 +65,19 @@ void setup() {
   offsets.set(&leg_5_1, new int[2] {-43, 0});
   offsets.set(&leg_6_1, new int[2] {-35, 0});
 
-  offsets.set(&leg_1_2, new int[2] {-2, 0});
-  offsets.set(&leg_2_2, new int[2] {10, 0});
-  offsets.set(&leg_3_2, new int[2] {0, 0});
-  offsets.set(&leg_4_2, new int[2] {1, 1});
-  offsets.set(&leg_5_2, new int[2] {4, 1});
-  offsets.set(&leg_6_2, new int[2] {2, 1});
+  offsets.set(&leg_1_2, new int[2] {38, 0});
+  offsets.set(&leg_2_2, new int[2] {50, 0});
+  offsets.set(&leg_3_2, new int[2] {40, 0});
+  offsets.set(&leg_4_2, new int[2] {41, 1});
+  offsets.set(&leg_5_2, new int[2] {44, 1});
+  offsets.set(&leg_6_2, new int[2] {42, 1});
 
-  offsets.set(&leg_1_3, new int[2] {-4, 0});
-  offsets.set(&leg_2_3, new int[2] {15, 0});
-  offsets.set(&leg_3_3, new int[2] {-1, 0});
-  offsets.set(&leg_4_3, new int[2] {-40, 1});
-  offsets.set(&leg_5_3, new int[2] {4, 1});
-  offsets.set(&leg_6_3, new int[2] {3, 1});
+  offsets.set(&leg_1_3, new int[2] {6, 0});
+  offsets.set(&leg_2_3, new int[2] {25, 0});
+  offsets.set(&leg_3_3, new int[2] {9, 0});
+  offsets.set(&leg_4_3, new int[2] {-30, 1});
+  offsets.set(&leg_5_3, new int[2] {14, 1});
+  offsets.set(&leg_6_3, new int[2] {13, 1});
 
   // communication with python:
   Serial.begin(115200);
@@ -108,8 +108,8 @@ void loop() {
 }
 
 void angel_rapper(Servo& servo, int angle) {
-  angle = (angle < 150) ? angle : 150;
-  angle = (angle > 30) ? angle : 30; 
+  angle = (angle < 140) ? angle : 140;
+  angle = (angle > 40) ? angle : 40; 
 
   angle += offsets.get(&servo)[0];
   if (offsets.get(&servo)[1] == 1) {
