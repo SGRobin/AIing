@@ -7,6 +7,7 @@ import serial
 # arduino_angles = [90] * 6 + [100] * 6 + [70] * 6
 
 arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
+# arduino = 10
 
 file_path = "..\\networks\\kinda_ok_walk_4.4.pkl"
 

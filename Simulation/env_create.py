@@ -11,6 +11,7 @@ import constants
 
 class Simulation:
     def __init__(self, gui=False):
+        self.i = 0
         self.physics_client = bc.BulletClient(connection_mode=p.GUI if gui else p.DIRECT)
         # self.id = simulation_id
 
@@ -115,8 +116,8 @@ class Simulation:
                     outputs = network.predict(inputs)
                     # print(outputs)
                     new_angles = (np.array(outputs) * 1.2) - 0.6  # [(out * 1.2) - 0.6 for out in outputs]
-                    true_angles = [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90]
-                    new_angles = np.radians(np.array(true_angles) - 90)
+                    # true_angles = [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90]
+                    # new_angles = np.radians(np.array(true_angles) - 90)
 
                 if i % 45 == 0:
                     punishment = self.punishments()
@@ -166,6 +167,7 @@ class Simulation:
 
         return reward
 
+
     #########
     # arduino control with simulation:
     def run_arduino_simulation(self, arduino, network=None, time_to_run=3000):
@@ -178,25 +180,29 @@ class Simulation:
             if i % 15 == 0:
                 angles = np.array(
                     [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
-                # Scale each element in the angles to the new range of inputs
-                inputs = angles * 20 / 3
-                # print(inputs)
-
-                outputs = network.predict(inputs)
-                print(outputs)
-                new_angles = [(out * 1.2) - 0.6 for out in outputs]
 
                 # arduino control:
                 # true_angles = [90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
                 # new_angles = np.radians(np.array(true_angles) - 90)
                 # angles = python_to_robot_angles(new_angles)
-                arduino.write(bytearray(python_to_robot_angles(new_angles)))
+                arduino.write(bytearray(python_to_robot_angles(angles)))
+                # python_to_robot_angles(angles)
+                # input()
 
-                robot = []
+
+                # robot = []
                 for _ in range(18):
                     arduino.read()
                     arduino.read()
-                print("ha ha bug")
+
+                # Scale each element in the angles to the new range of inputs
+                inputs = angles * 20 / 3
+                # print(inputs)
+
+                outputs = network.predict(inputs)
+                # print(outputs)
+                new_angles = [(out * 1.2) - 0.6 for out in outputs]
+
 
             for j, link_id in enumerate(self.link_ids):
                 self.physics_client.setJointMotorControl2(self.robot_id, link_id,
@@ -206,7 +212,7 @@ class Simulation:
                                                           maxVelocity=constants.MOTOR_MAX_VELOCITY)
 
             self.physics_client.stepSimulation()
-            time.sleep(0.01)
+            # time.sleep(0.01)
 
 
 def python_to_robot_angles(angles):
@@ -227,5 +233,6 @@ def python_to_robot_angles(angles):
     robot_angles = [leg_1[0], leg_2[0], leg_3[0], leg_4[0], leg_5[0], leg_6[0],
                     leg_1[1], leg_2[1], leg_3[1], leg_4[1], leg_5[1], leg_6[1],
                     leg_1[2], leg_2[2], leg_3[2], leg_4[2], leg_5[2], leg_6[2]]
+    print(f"sending angles {[int(a) for a in robot_angles]}")
 
     return [int(a) for a in robot_angles]
