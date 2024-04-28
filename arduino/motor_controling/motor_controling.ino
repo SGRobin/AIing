@@ -58,12 +58,12 @@ void setup() {
   leg_6_3.attach(13);
 
   // initialize dictionary:
-  offsets.set(&leg_1_1, new int[2] {-35, 0});
+  offsets.set(&leg_1_1, new int[2] {-25, 0});
   offsets.set(&leg_2_1, new int[2] {-43, 0});
-  offsets.set(&leg_3_1, new int[2] {-35, 0});
-  offsets.set(&leg_4_1, new int[2] {-20, 0});
+  offsets.set(&leg_3_1, new int[2] {-45, 0});
+  offsets.set(&leg_4_1, new int[2] {-10, 0});
   offsets.set(&leg_5_1, new int[2] {-43, 0});
-  offsets.set(&leg_6_1, new int[2] {-35, 0});
+  offsets.set(&leg_6_1, new int[2] {-50, 0});
 
   offsets.set(&leg_1_2, new int[2] {38, 0});
   offsets.set(&leg_2_2, new int[2] {50, 0});
@@ -87,8 +87,8 @@ void setup() {
 
 
 unsigned char val_1 = 90;
-unsigned char val_2 = 100;
-unsigned char val_3 = 70;
+unsigned char val_2 = 90;
+unsigned char val_3 = 90;
 unsigned char input[18] = {val_1, val_1, val_1, val_1, val_1, val_1, val_2, val_2, val_2, val_2, val_2, val_2, val_3, val_3, val_3, val_3, val_3, val_3};
 unsigned char output[18];
 
@@ -96,10 +96,10 @@ void loop() {
 
   set_motor_angles(input);
 
-  delay(200);
+  // delay(200);
   // prepare output:
-  get_motor_angels(output);
-  Serial.write(output, 18);
+  // get_motor_angels(output);
+  // Serial.write(output, 18);
 
   // Wait until python answers:
   while (Serial.available() < 18);

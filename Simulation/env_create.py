@@ -188,12 +188,12 @@ class Simulation:
                 arduino.write(bytearray(python_to_robot_angles(angles)))
                 # python_to_robot_angles(angles)
                 # input()
+                time.sleep(0.1)
 
-
-                # robot = []
-                for _ in range(18):
-                    arduino.read()
-                    arduino.read()
+                # # robot = []
+                # for _ in range(18):
+                #     arduino.read()
+                #     arduino.read()
 
                 # Scale each element in the angles to the new range of inputs
                 inputs = angles * 20 / 3
