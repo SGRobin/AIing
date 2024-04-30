@@ -56,7 +56,7 @@ class Simulation:
             self.physics_client.resetJointState(self.robot_id, joint, 0)
             self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos, self.startOrientation)
 
-    def punishments(self):
+    def punish_positions(self):
         punishment = 0
 
         robot_position, robot_orientation = self.physics_client.getBasePositionAndOrientation(self.robot_id)
@@ -64,98 +64,94 @@ class Simulation:
 
         # punishment for being inclined:
         for orientation in orientations:
-            punishment += abs(orientation) / 40
+            punishment += abs(orientation) / 35
 
         # remove reward if too low:
-        if robot_position[2] <= 0.06:
-            punishment += 0.01
-
-        collision_points = self.physics_client.getContactPoints(self.robot_id, self.plane_id)
-        #
-        # # punishment for going sideways - legs:
-        # for point in collision_points:
-        #     if point[5][1] > 0.3:
-        #         punishment += 0.01
+        if robot_position[2] <= 0.1:
+            punishment += 0.005
+            # print("low low low low..")
 
         # punishment for going sideways:
-        # todo: only when smart already only like that
-        punishment += abs(robot_position[1]) / 30
-
-        # punishment for not using all legs
-        collision_links = [point[3] for point in collision_points]
-        for key in self.collision_dict:
-            self.collision_dict[key] += 1
-            if self.collision_dict[key] > 15:
-                punishment += 0.01
-        for link in collision_links:
-            self.collision_dict[str(link)] = 0
-
+        punishment += abs(robot_position[1]) / 50
+        # print(punishment)
         # stop simulation if he is tilted
         # if abs(robot_orientation[3]) < 0.98:
         #     self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos,
         #                                                         self.startOrientation)
         #     return - 1
-        return punishment / 4.0
 
-    def run_simulation(self, network=None, wait=False, time_to_run=3000, network_controlled=True):
+        return punishment / 7
+
+    def punish_collisions(self):
+        punishment = 0
+
+        collision_points = self.physics_client.getContactPoints(self.robot_id, self.plane_id)
+        collision_links = [point[3] for point in collision_points]
+
+        for key in self.collision_dict:
+            self.collision_dict[key] += 1
+
+            if (self.collision_dict[key] + 1) % 300 == 0:
+                punishment += 0.15
+                # print("not using all legs")
+
+        for link in collision_links:
+            if self.collision_dict.get(str(link)) is None:
+                return 100
+            if 2 < self.collision_dict[str(link)] < 20:
+                punishment += 0.05
+                # print("small steps... (again)")
+            self.collision_dict[str(link)] = 0
+
+        return punishment / 13
+
+    def run_simulation(self, network=None, wait=False, time_to_run=3000):
         self.reset_joints()
         reward = 0
         self.collision_dict = {"4": 0, "9": 0, "14": 0, "19": 0, "24": 0, "29": 0}
-        if network_controlled is True:
-            new_angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in
-                          self.link_ids]
-            for i in range(time_to_run):
+        new_angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in
+                      self.link_ids]
+        for i in range(time_to_run):
 
-                if i % 15 == 0:
-                    angles = np.array(
-                        [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
-                    # Scale each element in the angles to the new range of inputs
-                    inputs = angles * 20 / 3
-                    # print(inputs)
+            punishment = self.punish_collisions()
+            reward -= punishment
 
-                    outputs = network.predict(inputs)
-                    # print(outputs)
-                    new_angles = (np.array(outputs) * 1.2) - 0.6  # [(out * 1.2) - 0.6 for out in outputs]
-                    # true_angles = [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90]
-                    # new_angles = np.radians(np.array(true_angles) - 90)
+            if i % 15 == 0:
+                angles = np.array(
+                    [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
+                # Scale each element in the angles to the new range of inputs
+                inputs = angles * 20 / 3
+                # print(inputs)
 
-                if i % 45 == 0:
-                    punishment = self.punishments()
+                outputs = network.predict(inputs)
+                # print(outputs)
+                new_angles = (np.array(outputs) * 1.2) - 0.6  # [(out * 1.2) - 0.6 for out in outputs]
+                # true_angles = [90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
+                # new_angles = np.radians(np.array(true_angles) - 90)
 
-                    # exit check:
-                    if punishment == -1:
-                        return reward - 100
+            if i % 45 == 0:
+                punishment = self.punish_positions()
 
-                    reward -= punishment
+                # exit check:
+                if punishment == -1:
+                    return reward - 100
 
-                for j, link_id in enumerate(self.link_ids):
-                    self.physics_client.setJointMotorControl2(self.robot_id, link_id,
-                                                              self.physics_client.POSITION_CONTROL,
-                                                              targetPosition=new_angles[j],
-                                                              force=constants.MOTOR_MAX_FORCE,
-                                                              maxVelocity=constants.MOTOR_MAX_VELOCITY)
+                reward -= punishment
+                # print(reward)
 
-                # start_time = time.time()
-                self.physics_client.stepSimulation()
-                # end_time = time.time()
-                # simulation_execution_time += end_time - start_time
-                if wait is True:
-                    time.sleep(0.004)
+            for j, link_id in enumerate(self.link_ids):
+                self.physics_client.setJointMotorControl2(self.robot_id, link_id,
+                                                          self.physics_client.POSITION_CONTROL,
+                                                          targetPosition=new_angles[j],
+                                                          force=constants.MOTOR_MAX_FORCE,
+                                                          maxVelocity=constants.MOTOR_MAX_VELOCITY)
 
-        else:
-            for i in range(time_to_run):
-                hard.step(self.robot_id, i)
-                self.physics_client.stepSimulation()
-                if i % 45 == 0:
-                    punishment = self.punishments()
-
-                    # exit check:
-                    if punishment == -1:
-                        return reward - 100
-
-                    reward -= punishment
-                if wait is True:
-                    time.sleep(0.004)
+            # start_time = time.time()
+            self.physics_client.stepSimulation()
+            # end_time = time.time()
+            # simulation_execution_time += end_time - start_time
+            if wait is True:
+                time.sleep(0.004)
 
         robot_position, robot_orientation = self.physics_client.getBasePositionAndOrientation(self.robot_id)
         distance = -robot_position[0]
@@ -166,7 +162,6 @@ class Simulation:
             reward -= 0.5
 
         return reward
-
 
     #########
     # arduino control with simulation:
@@ -202,7 +197,6 @@ class Simulation:
                 outputs = network.predict(inputs)
                 # print(outputs)
                 new_angles = [(out * 1.2) - 0.6 for out in outputs]
-
 
             for j, link_id in enumerate(self.link_ids):
                 self.physics_client.setJointMotorControl2(self.robot_id, link_id,
