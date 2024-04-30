@@ -3,7 +3,7 @@ import Simulation.env_create as env
 
 # file_path = "..\\networks\\walk.4.29.pkl"
 # file_path = "..\\networks\\save_network_generation.pkl"
-file_path = "..\\save_network_1.pkl"
+file_path = "..\\save_network_0.pkl"
 
 with open(file_path, "rb") as file:
     loaded_network = pickle.load(file)
