@@ -2,8 +2,8 @@ import pickle
 import random
 
 import constants
-from worms import worm_agent
 from neural_network import NeuralNetwork
+from worms import worm_agent
 
 AGENT = worm_agent
 
@@ -103,7 +103,7 @@ def train_generation(population):
 
     # Mutate the whole population except the worst one:
     next_generation = []
-    for i in range(constants.POPULATION_SIZE - 4):
+    for i in range(constants.POPULATION_SIZE - constants.NUM_REPLACED):
 
         # Change the mutation range if stuck
         num_stuck = population[i].generations_stuck

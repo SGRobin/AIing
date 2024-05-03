@@ -7,7 +7,7 @@ import pybullet_utils.bullet_client as bc
 
 # import Simulation.hard_code_walk as hard
 import constants
-
+from constants import PRINT_SIMULATION as PRINT
 
 class Simulation:
     def __init__(self, gui=False):
@@ -64,23 +64,37 @@ class Simulation:
 
         # punishment for being inclined:
         for orientation in orientations:
-            punishment += abs(orientation) / 35
+            punishment += abs(orientation) / 500
+            if PRINT:
+                self.sum_orientation += abs(orientation) / 500
 
         # remove reward if too low:
-        if robot_position[2] <= 0.1:
-            punishment += 0.005
-            # print("low low low low..")
+        if robot_position[2] <= 0.8:
+            punishment += 0.001
+            if PRINT:
+                self.sum_low += 0.001
+                print("low low low low..")
 
         # punishment for going sideways:
-        punishment += abs(robot_position[1]) / 50
-        # print(punishment)
-        # stop simulation if he is tilted
-        # if abs(robot_orientation[3]) < 0.98:
-        #     self.physics_client.resetBasePositionAndOrientation(self.robot_id, self.startPos,
-        #                                                         self.startOrientation)
-        #     return - 1
+        punishment += abs(robot_position[1]) / 350
+        if PRINT:
+            self.sum_position += abs(robot_position[1]) / 350
 
-        return punishment / 7
+        # punishment for overbending:
+        angles = np.array([self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
+        angles = np.degrees(angles) + 90
+        # print(angles)
+        for i in range(0, 18, 3):
+            # print(angles[i + 1], angles[i + 2])
+            if angles[i + 1] + angles[i + 2] < 135:
+                punishment += 0.001
+                if PRINT:
+                    print("I am BENDING!!")
+                    self.sum_bending += 0.001
+
+
+
+        return punishment
 
     def punish_collisions(self):
         punishment = 0
@@ -92,18 +106,22 @@ class Simulation:
             self.collision_dict[key] += 1
 
             if (self.collision_dict[key] + 1) % 300 == 0:
-                punishment += 0.15
-                # print("not using all legs")
+                punishment += 0.025
+                if PRINT:
+                    self.sum_not_all_legs += 0.025
+                    print("not using all legs")
 
         for link in collision_links:
             if self.collision_dict.get(str(link)) is None:
                 return 100
             if 2 < self.collision_dict[str(link)] < 20:
-                punishment += 0.05
-                # print("small steps... (again)")
+                punishment += 0.004
+                if PRINT:
+                    self.sum_small_steps += 0.004
+                    print("small steps... (again)")
             self.collision_dict[str(link)] = 0
 
-        return punishment / 13
+        return punishment
 
     def run_simulation(self, network=None, wait=False, time_to_run=3000):
         self.reset_joints()
@@ -111,6 +129,14 @@ class Simulation:
         self.collision_dict = {"4": 0, "9": 0, "14": 0, "19": 0, "24": 0, "29": 0}
         new_angles = [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in
                       self.link_ids]
+        if PRINT:
+            self.sum_not_all_legs = 0
+            self.sum_small_steps = 0
+            self.sum_orientation = 0
+            self.sum_position = 0
+            self.sum_low = 0
+            self.sum_bending = 0
+
         for i in range(time_to_run):
 
             punishment = self.punish_collisions()
@@ -126,7 +152,7 @@ class Simulation:
                 outputs = network.predict(inputs)
                 # print(outputs)
                 new_angles = (np.array(outputs) * 1.2) - 0.6  # [(out * 1.2) - 0.6 for out in outputs]
-                # true_angles = [90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
+                # true_angles = [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
                 # new_angles = np.radians(np.array(true_angles) - 90)
 
             if i % 45 == 0:
@@ -161,6 +187,14 @@ class Simulation:
         if distance < 0.1:
             reward -= 0.5
 
+        if PRINT:
+            print("punishments:")
+            print("\tsum not all legs:", self.sum_not_all_legs)
+            print("\tsum small steps:", self.sum_small_steps)
+            print("\tsum low:", self.sum_low)
+            print("\tsum position:", self.sum_position)
+            print("\tsum orientation:", self.sum_orientation)
+            print("\tsum bending:", self.sum_bending)
         return reward
 
     #########
