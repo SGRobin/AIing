@@ -205,7 +205,13 @@ class Simulation:
                       self.link_ids]
 
         for i in range(time_to_run):
+            angles = np.array(
+                [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
 
+            # arduino control:
+            arduino.write(bytearray(python_to_robot_angles(angles)))
+            # input()
+            time.sleep(0.015)
             if i % 15 == 0:
                 angles = np.array(
                     [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
@@ -214,10 +220,10 @@ class Simulation:
                 # true_angles = [90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
                 # new_angles = np.radians(np.array(true_angles) - 90)
                 # angles = python_to_robot_angles(new_angles)
-                arduino.write(bytearray(python_to_robot_angles(angles)))
-                # python_to_robot_angles(angles)
-                # input()
-                time.sleep(0.1)
+                # arduino.write(bytearray(python_to_robot_angles(angles)))
+                # # python_to_robot_angles(angles)
+                # # input()
+                # time.sleep(0.2)
 
                 # # robot = []
                 # for _ in range(18):

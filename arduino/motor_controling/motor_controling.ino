@@ -17,7 +17,7 @@ Servo leg_4_1; // 18
 Servo leg_4_2; // 19
 Servo leg_4_3; // 20
 
-Servo leg_5_1; // 1
+Servo leg_5_1; // 9 - because pins 0 and 1 dont work
 Servo leg_5_2; // 2
 Servo leg_5_3; // 3
 
@@ -45,7 +45,7 @@ void setup() {
   leg_4_2.attach(19);
   leg_4_3.attach(20);
 
-  leg_5_1.attach(1);
+  leg_5_1.attach(9);
   leg_5_2.attach(2);
   leg_5_3.attach(3);
 
@@ -66,7 +66,7 @@ void setup() {
   offsets.set(&leg_3_2, new int[2] {40, 0});
   offsets.set(&leg_4_2, new int[2] {41, 1});
   offsets.set(&leg_5_2, new int[2] {44, 1});
-  offsets.set(&leg_6_2, new int[2] {42, 1});
+  offsets.set(&leg_6_2, new int[2] {10, 1});
 
   offsets.set(&leg_1_3, new int[2] {6, 0});
   offsets.set(&leg_2_3, new int[2] {25, 0});
@@ -105,7 +105,7 @@ void angel_rapper(Servo& servo, int angle) {
     angle = 180 - angle;
   }
 
-
+  
   servo.write(angle);
 }
 

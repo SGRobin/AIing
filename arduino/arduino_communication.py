@@ -7,7 +7,7 @@ import Simulation.env_create as env
 arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
 # arduino = 10
 
-file_path = "..\\networks\\kinda_ok_walk_4.4.pkl"
+file_path = "..\\networks\\walk_3.5.pkl"
 
 with open(file_path, "rb") as file:
     loaded_network = pickle.load(file)
