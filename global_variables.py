@@ -1,0 +1,1 @@
+PAUSE_ROBOT: bool = False  # Global variable to control robot pausing

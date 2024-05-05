@@ -7,7 +7,9 @@ import pybullet_utils.bullet_client as bc
 
 # import Simulation.hard_code_walk as hard
 import constants
+import global_variables
 from constants import PRINT_SIMULATION as PRINT
+
 
 class Simulation:
     def __init__(self, gui=False):
@@ -208,6 +210,9 @@ class Simulation:
             angles = np.array(
                 [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
 
+            # pause simulation check:
+            if global_variables.PAUSE_ROBOT:
+                break
             # arduino control:
             arduino.write(bytearray(python_to_robot_angles(angles)))
             # input()
@@ -215,20 +220,6 @@ class Simulation:
             if i % 15 == 0:
                 angles = np.array(
                     [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
-
-                # arduino control:
-                # true_angles = [90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
-                # new_angles = np.radians(np.array(true_angles) - 90)
-                # angles = python_to_robot_angles(new_angles)
-                # arduino.write(bytearray(python_to_robot_angles(angles)))
-                # # python_to_robot_angles(angles)
-                # # input()
-                # time.sleep(0.2)
-
-                # # robot = []
-                # for _ in range(18):
-                #     arduino.read()
-                #     arduino.read()
 
                 # Scale each element in the angles to the new range of inputs
                 inputs = angles * 20 / 3
@@ -247,6 +238,10 @@ class Simulation:
 
             self.physics_client.stepSimulation()
             # time.sleep(0.01)
+
+        # Return to standing:
+        base_angles = [90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
+        arduino.write(bytearray(base_angles))
 
 
 def python_to_robot_angles(angles):
@@ -267,6 +262,6 @@ def python_to_robot_angles(angles):
     robot_angles = [leg_1[0], leg_2[0], leg_3[0], leg_4[0], leg_5[0], leg_6[0],
                     leg_1[1], leg_2[1], leg_3[1], leg_4[1], leg_5[1], leg_6[1],
                     leg_1[2], leg_2[2], leg_3[2], leg_4[2], leg_5[2], leg_6[2]]
-    print(f"sending angles {[int(a) for a in robot_angles]}")
+    # print(f"sending angles {[int(a) for a in robot_angles]}")
 
     return [int(a) for a in robot_angles]
