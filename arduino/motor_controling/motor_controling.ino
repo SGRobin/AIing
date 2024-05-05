@@ -29,9 +29,9 @@ Dictionary<int, int*> offsets = Dictionary<int, int*>();
 
 void setup() {
   // attaching servos to GPIO pins:
-  leg_1_1.attach(5);
-  leg_1_2.attach(6);
-  leg_1_3.attach(7);
+  leg_1_1.attach(7);
+  leg_1_2.attach(8);
+  leg_1_3.attach(9);
 
   leg_2_1.attach(14);
   leg_2_2.attach(15);
@@ -45,9 +45,9 @@ void setup() {
   leg_4_2.attach(19);
   leg_4_3.attach(20);
 
-  leg_5_1.attach(9);
-  leg_5_2.attach(2);
-  leg_5_3.attach(3);
+  leg_5_1.attach(3);
+  leg_5_2.attach(4);
+  leg_5_3.attach(5);
 
   leg_6_1.attach(11);
   leg_6_2.attach(12);
@@ -61,12 +61,12 @@ void setup() {
   offsets.set(&leg_5_1, new int[2] {-43, 0});
   offsets.set(&leg_6_1, new int[2] {-50, 0});
 
-  offsets.set(&leg_1_2, new int[2] {38, 0});
-  offsets.set(&leg_2_2, new int[2] {50, 0});
-  offsets.set(&leg_3_2, new int[2] {40, 0});
-  offsets.set(&leg_4_2, new int[2] {41, 1});
-  offsets.set(&leg_5_2, new int[2] {44, 1});
-  offsets.set(&leg_6_2, new int[2] {10, 1});
+  offsets.set(&leg_1_2, new int[2] {48, 0});
+  offsets.set(&leg_2_2, new int[2] {60, 0});
+  offsets.set(&leg_3_2, new int[2] {50, 0});
+  offsets.set(&leg_4_2, new int[2] {51, 1});
+  offsets.set(&leg_5_2, new int[2] {54, 1});
+  offsets.set(&leg_6_2, new int[2] {42, 1});
 
   offsets.set(&leg_1_3, new int[2] {6, 0});
   offsets.set(&leg_2_3, new int[2] {25, 0});
@@ -87,6 +87,8 @@ unsigned char val_2 = 90;
 unsigned char val_3 = 90;
 unsigned char input[18] = {val_1, val_1, val_1, val_1, val_1, val_1, val_2, val_2, val_2, val_2, val_2, val_2, val_3, val_3, val_3, val_3, val_3, val_3};
 
+unsigned char previous_angles[18];
+
 void loop() {
 
   set_motor_angles(input);
@@ -96,7 +98,8 @@ void loop() {
 
 }
 
-void angel_rapper(Servo& servo, int angle) {
+void angel_rapper(Servo& servo, unsigned char angle) {
+  if(angle == 255) return;
   angle = (angle < 140) ? angle : 140;
   angle = (angle > 40) ? angle : 40; 
 
@@ -110,6 +113,14 @@ void angel_rapper(Servo& servo, int angle) {
 }
 
 void set_motor_angles(unsigned char *angles) {
+  for (int i=0; i < 18; i++) {
+    if(abs(angles[i] - previous_angles[i]) < 2)
+      angles[i] = 255;
+    else
+      previous_angles[i] = angles[i];
+  }
+
+
   angel_rapper(leg_1_1, angles[0]);
   angel_rapper(leg_2_1, angles[1]);
   angel_rapper(leg_3_1, angles[2]);

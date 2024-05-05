@@ -64,9 +64,9 @@ class Simulation:
 
         # punishment for being inclined:
         for orientation in orientations:
-            punishment += abs(orientation) / 500
+            punishment += abs(orientation) / 300
             if PRINT:
-                self.sum_orientation += abs(orientation) / 500
+                self.sum_orientation += abs(orientation) / 300
 
         # remove reward if too low:
         if robot_position[2] <= 0.8:
@@ -211,7 +211,7 @@ class Simulation:
             # arduino control:
             arduino.write(bytearray(python_to_robot_angles(angles)))
             # input()
-            time.sleep(0.015)
+            time.sleep(0.004)
             if i % 15 == 0:
                 angles = np.array(
                     [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
