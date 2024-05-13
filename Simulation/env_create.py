@@ -18,7 +18,7 @@ class Simulation:
         # self.id = simulation_id
 
         self.link_ids = [2, 3, 4, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29]
-        self.URDF_file_path = "C:\\Users\\USER\\PycharmProjects\\AIing\\Simulation\\models\\crab_model.urdf.xml"
+        self.URDF_file_path = r"C:\Users\shlom\PycharmProjects\AIing\Simulation\models\crab_model.urdf.xml"
         self.startPos = [0, 0, 0.18]
         self.startOrientation = self.physics_client.getQuaternionFromEuler([0, 0, 0])
 
@@ -214,9 +214,10 @@ class Simulation:
             if global_variables.PAUSE_ROBOT:
                 break
             # arduino control:
+            print(python_to_robot_angles(angles))
             arduino.write(bytearray(python_to_robot_angles(angles)))
             # input()
-            time.sleep(0.004)
+            time.sleep(0.1)
             if i % 15 == 0:
                 angles = np.array(
                     [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])

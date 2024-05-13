@@ -2,9 +2,14 @@ from window_gui import create_window_gui
 import serial
 ROBOT_CONNECTED = True
 
+
 arduino = None
 if ROBOT_CONNECTED:
-    arduino = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
+    try:
+        arduino = serial.Serial(port='COM3', baudrate=9600, timeout=2, exclusive=True)
 
-# Call the function to run the button GUI
-create_window_gui(arduino)
+        # Call the function to run the button GUI
+        create_window_gui(arduino)
+    finally:
+        #arduino.close()
+        pass
