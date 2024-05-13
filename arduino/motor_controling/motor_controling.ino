@@ -45,7 +45,7 @@ Motor motors[18] = {
           Motor(22, -45, false), // leg_3_1
           Motor(18, -10, false), // leg_4_1
           Motor(3, -43, false), // leg_5_1
-          Motor(11, -50, false), // leg_6_1
+          Motor(29, -50, false), // leg_6_1 # used to be 11 but needed pin for BT
           Motor(8, 48, false), // leg_1_2
           Motor(15, 60, false), // leg_2_2
           Motor(23, 50, false), // leg_3_2

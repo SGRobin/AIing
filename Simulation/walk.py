@@ -2,8 +2,8 @@ import pickle
 import Simulation.env_create as env
 
 
-# file_path = "..\\networks\\walk_4.5.pkl"
-file_path = r"C:\Users\USER\PycharmProjects\AIing\networks\save_network_generation.pkl"
+file_path = r"C:\Users\USER\PycharmProjects\AIing\networks\excelente_5.5.pkl"
+# file_path = r"C:\Users\USER\PycharmProjects\AIing\networks\save_network_generation.pkl"
 # file_path = "..\\save_network_0.pkl"
 
 with open(file_path, "rb") as file:

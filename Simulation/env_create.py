@@ -240,7 +240,7 @@ class Simulation:
             # time.sleep(0.01)
 
         # Return to standing:
-        base_angles = [90, 90, 90, 90, 90, 90, 40, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
+        base_angles = [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
         arduino.write(bytearray(base_angles))
 
 
