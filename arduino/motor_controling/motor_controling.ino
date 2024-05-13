@@ -66,7 +66,7 @@ void setup(){
     motors[i].init();
   }
 
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.setTimeout(1);
 }
 
@@ -78,8 +78,11 @@ unsigned char input[18] = {val_1, val_1, val_1, val_1, val_1, val_1, val_2, val_
 void loop(){
 
   for (int i = 0; i<18; i++){
-        motors[i].set_angle(input[i]);
+    motors[i].set_angle(input[i]);
+    //Serial.print(input[i]); // send to serial monitor
+    //Serial.print(", ");
   }
+  // Serial.println("");
 
   while (Serial.available() < 18);
   Serial.readBytes(input, 18);

@@ -71,7 +71,9 @@ void setup(){
   pinMode(rxPin, INPUT);
   pinMode(txPin, OUTPUT);
   BTSerial.begin(9600);
+  BTSerial.setTimeout(1)
   Serial.begin(9600);
+  Serial.setTimeout(1);
   
   // move the motors:
   for (int i = 0; i<18; i++){
@@ -79,7 +81,6 @@ void setup(){
   }
 
   // Serial.begin(115200);
-  // Serial.setTimeout(1);
 }
 
 unsigned char val_1 = 90;
@@ -90,15 +91,15 @@ unsigned char input[18] = {val_1, val_1, val_1, val_1, val_1, val_1, val_2, val_
 void loop(){
 
   for (int i = 0; i<18; i++){
-        motors[i].set_angle(input[i]);
+    motors[i].set_angle(input[i]);
+    Serial.print(input[i]); // send to serial monitor
+    Serial.print(", ");
   }
+  Serial.println("");
 
   while (BTSerial.available() < 18);
   for (int i = 0; i<18; i++){
     // unsigned char data = BTSerial.read();
     input[i] = BTSerial.read();
-    // Serial.print(input[i]); // send to serial monitor
-    // Serial.print(", ");
   }
-  // Serial.println("");
 }
