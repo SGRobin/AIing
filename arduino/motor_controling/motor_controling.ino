@@ -52,7 +52,7 @@ Motor motors[18] = {
           Motor(29, 51, true), // leg_4_2 19
           Motor(4, 54, true), // leg_5_2
           Motor(12, 42, true), // leg_6_2
-          Motor(9, 6, false), // leg_1_3
+          Motor(9, -15, false), // leg_1_3
           Motor(16, 25, false), // leg_2_3
           Motor(24, 9, false), // leg_3_3
           Motor(30, -30, true), // leg_4_3 20

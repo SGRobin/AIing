@@ -214,7 +214,7 @@ class Simulation:
             if global_variables.PAUSE_ROBOT:
                 break
 
-            if i % 10 == 0:
+            if i % 5 == 0:
                 # arduino control:
                 print(python_to_robot_angles(angles))
                 arduino.write(bytearray(python_to_robot_angles(angles)))
