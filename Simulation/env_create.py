@@ -18,7 +18,7 @@ class Simulation:
         # self.id = simulation_id
 
         self.link_ids = [2, 3, 4, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29]
-        self.URDF_file_path = r"C:\Users\USER\PycharmProjects\AIing\Simulation\models\crab_model.urdf.xml"
+        self.URDF_file_path = r"C:\Users\shlom\PycharmProjects\AIing\Simulation\models\crab_model.urdf.xml"
         self.startPos = [0, 0, 0.18]
         self.startOrientation = self.physics_client.getQuaternionFromEuler([0, 0, 0])
 
@@ -209,17 +209,16 @@ class Simulation:
         for i in range(time_to_run):
             angles = np.array(
                 [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
-
             # pause simulation check:
             if global_variables.PAUSE_ROBOT:
                 break
-
-            if i % 5 == 0:
-                # arduino control:
+            # arduino control:
+            if i % 10 == 0:
                 print(python_to_robot_angles(angles))
                 arduino.write(bytearray(python_to_robot_angles(angles)))
             # input()
-            time.sleep(0.01)
+            time.sleep(0.006)
+            # time.sleep(0.01)
             if i % 15 == 0:
                 angles = np.array(
                     [self.physics_client.getJointState(self.robot_id, link_id)[0] for link_id in self.link_ids])
@@ -243,6 +242,7 @@ class Simulation:
             # time.sleep(0.01)
 
         # Return to standing:
+        print("exiting")
         base_angles = [90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90]
         arduino.write(bytearray(base_angles))
 
